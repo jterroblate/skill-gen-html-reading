@@ -1,146 +1,195 @@
 ---
 name: skill-gen-html-reading
 description: >
-  Generate interactive IELTS reading practice HTML with heading-matching drag-and-drop,
-  MCQ, TFNG, info matching, and summary completion. Supports 5-passage layout with
-  heading slots BEFORE each paragraph (draggable), submit/reveal/reset, and PDF export.
-  Trigger when user requests: reading practice HTML, 阅读刷题HTML, reading player,
-  heading matching drag-and-drop, or any IELTS reading practice interface.
+  Generate interactive IELTS reading practice HTML from structured JSON data with
+  heading-matching drag-and-drop, MCQ, TFNG/YNNG, matching select, fill, summary
+  completion, submit/reveal/reset/scoring, and smoke-testable fixtures. Trigger
+  when user requests: reading practice HTML, 阅读刷题HTML, reading player, heading
+  matching drag-and-drop, or an IELTS reading practice interface.
 ---
 
 # IELTS Reading Player Generator
 
-## Purpose
+## Current Scope
 
-Generate a fully interactive IELTS Academic Reading practice HTML file from supplied
-passage content and question data. The output is a standalone HTML file with:
+This skill is currently a **JSON → standalone HTML generator** for IELTS-style
+reading practice. It stabilizes the rendering/player layer only.
 
-- 5 passages with tab switching (P1–P5)
-- Left column: passage text with interactive elements
-- Right column: questions + draggable heading pool
-- **Heading matching**: drag-and-drop slots before each paragraph in the passage column
-- Question types supported: MCQ, TFNG (True/False/Not Given), YNNG (Yes/No/Not Given),
-  Matching Information (dropdown select), Summary Completion (fill input)
-- Submit → red/green feedback → reveal explanations → PDF export
+It does **not** currently support:
+
+- PDF input parsing
+- DOCX input parsing
+- OCR or screenshot understanding
+- pure-text automatic question extraction
+- full agent-mediated LLM generation / merge pipeline
+- Word export
+- strict student-version security against viewing answers in HTML source
+
+Those are later phases. Do not present this skill as a complete raw-material →
+reading-pack generator until those stages exist.
+
+## Output
+
+The generator produces a single standalone HTML file with:
+
+- Dynamic passage tabs; supported passage counts: **1, 3, or 5**
+- Left column: passage text
+- Right column: questions and heading pool
+- Heading matching: passage-side answer drop boxes before each target paragraph; drag/drop plus click-heading-then-click-slot support
+- Question types: MCQ, TFNG, YNNG, matching select, fill, summary completion
+- Submit → red/green feedback without revealing correct answers
+- Reveal buttons after submit; heading reveal writes the full correct heading into the passage-side answer box
+- Reset current passage, including heading slot values, used heading state, feedback, score, and reveals
+- Score display
+- Browser-side score report PDF via jsPDF/html2canvas CDN
+
+Important limitation: answers are embedded in HTML `data-ans` attributes and hidden
+reveal blocks. The output is fine for practice UX but is **not a strict secure
+student version**.
 
 ## Quick Start
 
-```bash
-python scripts/generate_reading.py \
-  --title "IELTS Reading · U01 Daily Rhythm" \
-  --output "/path/to/刷题.html" \
-  --data /tmp/passage_data.json
-```
-
-Validate output:
+From this skill directory:
 
 ```bash
-python scripts/validate_reading.py "/path/to/刷题.html"
+python3 -B scripts/generate_reading.py \
+  --data fixtures/minimal_1_passage.json \
+  --output /tmp/reading_minimal.html
 ```
 
-## Input JSON Schema
+Validate generated HTML:
 
-The `--data` JSON file defines all 5 passages:
+```bash
+python3 -B scripts/validate_reading.py /tmp/reading_minimal.html
+```
+
+Run the full non-destructive smoke suite:
+
+```bash
+python3 -B scripts/smoke_test.py
+```
+
+Smoke tests generate temporary HTML under a system temp directory and do not write
+outputs into the skill directory.
+
+## Input Data Contract
+
+The formal schema is documented in:
+
+- `schema/reading_data.schema.json`
+
+The runtime generator also performs built-in schema/data validation before writing
+HTML. Good fixtures are in `fixtures/`; the bad fixture must fail validation.
+
+Top-level structure:
 
 ```json
 {
-  "title": "IELTS Academic Reading · U01 日常节奏",
+  "title": "IELTS Reading · Unit Name",
+  "header_title": "IELTS Academic Reading · Unit Name",
+  "header_sub": "optional first-passage subtitle override",
   "passages": [
     {
       "num": 1,
-      "title": "The Morning People",
-      "meta": "Band 5.5-6.0 · Social Observation · Linked: Morning routines, daily habits, self-discipline",
+      "title": "Passage Title",
+      "band": "6.0",
+      "genre": "Social Observation",
+      "meta": "Band 6.0 · Social Observation",
       "paras": [
-        {"label": "A", "text": "At precisely 5:30 every morning..."},
-        {"label": "B", "text": "Mrs Chen is what researchers describe..."},
-        ...
+        {"label": "A", "text": "Paragraph text..."}
       ],
       "questions": {
         "type": "regular",
-        "blocks": [
-          {"q": 1, "type": "mcq", "stem": "What characterises Mrs Chen's approach...", "options": ["A) ...", "B) ...", "C) ...", "D) ..."], "answer": "B"},
-          {"q": 2, "type": "tfng", "statement": "Mrs Chen started her routine...", "answer": "FALSE"},
-          {"q": 3, "type": "fill", "text": "Irregular sleep patterns can cause ___...", "answer": "social jetlag"}
-        ]
+        "blocks": []
       }
-    },
-    {
-      "num": 2,
-      ...
-    },
-    ...
+    }
   ]
 }
 ```
 
-For heading-matching passages (the `type` field is `"heading"` instead of `"regular"`):
+Supported passage counts: **1, 3, or 5**.
+
+## Question Blocks
+
+### MCQ
+
+```json
+{"q": 1, "type": "mcq", "stem": "...", "options": ["A) ...", "B) ..."], "answer": "A", "reveal": "..."}
+```
+
+### TFNG / YNNG
+
+```json
+{"q": 2, "type": "tfng", "statement": "...", "answer": "TRUE", "reveal": "..."}
+{"q": 3, "type": "ynng", "statement": "...", "answer": "YES", "reveal": "..."}
+```
+
+### Matching Select
+
+```json
+{"q": 4, "type": "match", "text": "Which paragraph mentions...?", "options": ["A", "B"], "answer": "B", "reveal": "..."}
+```
+
+### Fill
+
+```json
+{"q": 5, "type": "fill", "before": "The key word is", "after": ".", "answer": "routine", "reveal": "..."}
+```
+
+### Summary
+
+```json
+{"q": 6, "type": "summary", "pairs": [[6, "The idea is", "simple", "."]], "reveals": ["simple — evidence..."]}
+```
+
+### Heading Matching
+
+For heading passages, set `questions.type` to `heading`, provide `headings`,
+paragraph-label `answers`, and optional `heading_info` blocks for visible question
+labels/reveals.
 
 ```json
 {
-  "num": 3,
-  "title": "How I Learned to Walk Again",
-  "paras": [{"label": "A", "text": "..."}, ...],
-  "questions": {
-    "type": "heading",
-    "headings": [
-      {"key": "i", "text": "A small commitment that grew naturally"},
-      {"key": "ii", "text": "How movement changed my thinking"},
-      ...
-    ],
-    "answers": {"A": "iii", "B": "i", "C": "ii", "D": "iv", "E": "v"},
-    "blocks": [
-      {"q": 6, "type": "mcq", ...},
-      ...
-    ]
-  }
+  "type": "heading",
+  "headings": [["i", "A small commitment"], ["ii", "A later change"]],
+  "answers": {"A": "i", "B": "ii"},
+  "blocks": [
+    {"q": 1, "type": "heading_info", "label": "A", "reveal": "i — evidence..."}
+  ]
 }
 ```
 
-## HTML Architecture
+## Validation and Warnings
 
-```
-┌─────────────────────────────────────────┐
-│  Tab Bar: P1 P2 P3 P4 P5               │
-├─────────────────────────────────────────┤
-│  Action Bar: [提交答案] [重置本篇] 得分  │
-├─ 成绩导出 (compact, shown after submit) ─┤
-├─ Header: title + subtitle ──────────────┤
-├─────────────────────────────────────────┤
-│  ┌─ Passage Col ───┬─ Questions Col ──┐  │
-│  │ [拖拽标题至此]   │  Heading Pool     │  │
-│  │ [💡 显示解析]    │  (draggable)      │  │
-│  │ Paragraph A      │  MCQ / TFNG       │  │
-│  │ ...             │  Fill inputs       │  │
-│  │ [拖拽标题至此]   │                    │  │
-│  │ [💡 显示解析]    │                    │  │
-│  │ Paragraph B      │                    │  │
-│  │ ...             │                    │  │
-│  └─────────────────┴──────────────────┘  │
-└─────────────────────────────────────────┘
+`validate_reading.py` checks:
+
+- html/body/script open/close tag counts
+- duplicate trailing closing tags
+- div balance
+- required DOM classes and interaction functions
+- passage tab/panel counts
+- non-empty passage text, question text, and reveal text
+- MCQ options and `data-ans`
+- fill/summary answers
+- heading pool, heading item, heading slot, and drag/drop functions
+
+Expected warning:
+
+```text
+WARNING: current output is not a strict student version because answers are embedded in HTML source/data attributes.
 ```
 
-## Key Design Decisions
+This warning is intentional until a later strict student/teacher split exists.
 
-### Heading Matching
-- Drop zone (`<div class="heading-slot">`) appears **before each paragraph** in passage column
-- Heading pool (`<div class="heading-pool">`) with draggable `<span>` items stays in questions column
-- PlaceHeading JS reads `item.textContent.trim()` for **full heading text display** (not just key)
-- Click on filled slot clears it (returns heading to pool)
-- Submit grades passage-col heading-slots via `gradePanel()`
+## Fixtures
 
-### Action Bar Position
-- Submit/Reset/Score buttons are in a compact bar **between the tab bar and header**
-- PDF export section is also at the top (below action bar, above header)
-- NOT at the bottom where it takes space
-
-### Answer Reveal
-- "💡 显示解析" buttons are **auto-generated** before each `.answer-reveal` element
-- For heading matching: the answer-reveal is in the passage column (after heading-slot)
-- Reveal buttons are disabled until submit, then enabled
-- On reveal, correct answers are highlighted in green, wrong in red
+- `fixtures/minimal_1_passage.json` — minimal valid 1-passage fixture
+- `fixtures/escaping_edge_cases.json` — 3-passage fixture with `<`, `>`, `&`, quotes, slash, long dash
+- `fixtures/full_5_passage_all_types.json` — 5-passage fixture covering supported types
+- `fixtures/bad_missing_required.json` — invalid fixture that must fail schema/data validation
 
 ## Related
 
-- [player-architecture.md](references/player-architecture.md)
-- [production-workflow.md](references/production-workflow.md)
-- [skill-gen-reading-listening SKILL.md](../skill-gen-reading-listening/SKILL.md)
+- `references/production-workflow.md`
+- `references/player-architecture.md`
+- `schema/reading_data.schema.json`

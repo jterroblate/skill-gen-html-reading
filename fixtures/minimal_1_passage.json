@@ -1,0 +1,38 @@
+{
+  "title": "IELTS Reading · Minimal Smoke",
+  "header_title": "IELTS Academic Reading · Minimal Smoke",
+  "passages": [
+    {
+      "num": 1,
+      "title": "A Small Routine",
+      "band": "5.5",
+      "genre": "Social Observation",
+      "meta": "Band 5.5 · Social Observation",
+      "paras": [
+        {"label": "A", "text": "Every morning, Lina writes three sentences before breakfast."},
+        {"label": "B", "text": "The routine helps her notice small changes in her day."}
+      ],
+      "questions": {
+        "type": "regular",
+        "blocks": [
+          {
+            "q": 1,
+            "type": "mcq",
+            "stem": "What does Lina do every morning?",
+            "options": ["A) She writes briefly", "B) She travels", "C) She cooks for friends", "D) She studies maps"],
+            "answer": "A",
+            "reveal": "A — Paragraph A states that Lina writes three sentences before breakfast."
+          },
+          {
+            "q": 2,
+            "type": "fill",
+            "before": "The routine helps her notice",
+            "after": "changes.",
+            "answer": "small",
+            "reveal": "small — Paragraph B mentions small changes."
+          }
+        ]
+      }
+    }
+  ]
+}

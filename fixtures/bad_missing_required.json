@@ -1,0 +1,22 @@
+{
+  "title": "Bad Fixture Missing Required Fields",
+  "passages": [
+    {
+      "num": 1,
+      "title": "Broken Passage",
+      "paras": [
+        {"label": "A", "text": "This paragraph exists."}
+      ],
+      "questions": {
+        "type": "regular",
+        "blocks": [
+          {
+            "q": 1,
+            "type": "mcq",
+            "stem": "This MCQ is missing options and answer."
+          }
+        ]
+      }
+    }
+  ]
+}

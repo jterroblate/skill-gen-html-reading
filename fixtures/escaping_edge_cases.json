@@ -1,0 +1,71 @@
+{
+  "title": "IELTS Reading · Escaping <>&'\" — / ‘curly’ “quotes”",
+  "header_title": "Escaping Smoke <Reader> & Safety",
+  "passages": [
+    {
+      "num": 1,
+      "title": "Symbols <Tags> & Reader’s “Attention” plus </script> safety",
+      "band": "6.0–6.5",
+      "genre": "Edge / Escaping",
+      "meta": "Contains <, >, &, ', \"double quotes\", slash /, long dash —, IELTS ‘curly’ “quotes”, and literal </script> text",
+      "paras": [
+        {"label": "A", "text": "A reader may see symbols such as <angle brackets>, ampersands & slashes / in a source."},
+        {"label": "B", "text": "The phrase ‘careful reading’ — often written in “quotes” — should not break the page."}
+      ],
+      "questions": {
+        "type": "regular",
+        "blocks": [
+          {
+            "q": 1,
+            "type": "mcq",
+            "stem": "Which symbols appear in paragraph A: <, >, &, or /?",
+            "options": ["A) <angle brackets>", "B) Only plain letters", "C) A hidden <script>", "D) Nothing"],
+            "answer": "A",
+            "reveal": "A — Paragraph A includes <angle brackets>, & and /."
+          },
+          {
+            "q": 2,
+            "type": "fill",
+            "before": "The phrase uses",
+            "after": "reading.",
+            "answer": "careful",
+            "reveal": "careful — Paragraph B contains ‘careful reading’ with IELTS-style quotes."
+          }
+        ]
+      }
+    },
+    {
+      "num": 2,
+      "title": "Heading & Matching — Safe Text",
+      "band": "6.5",
+      "genre": "Heading <Match>",
+      "meta": "Heading passage with escaped headings",
+      "paras": [
+        {"label": "A", "text": "First, the writer tests whether symbols stay visible."},
+        {"label": "B", "text": "Then the writer checks that matching still works."}
+      ],
+      "questions": {
+        "type": "heading",
+        "headings": [["i", "Testing symbols <>& safely"], ["ii", "Checking matching — after escaping"], ["iii", "A spare heading / distractor"]],
+        "answers": {"A": "i", "B": "ii"},
+        "blocks": [
+          {"q": 1, "type": "heading_info", "label": "A", "reveal": "i — Testing symbols <>& safely."},
+          {"q": 2, "type": "heading_info", "label": "B", "reveal": "ii — Checking matching — after escaping."}
+        ]
+      }
+    },
+    {
+      "num": 3,
+      "title": "Final Safe Passage",
+      "band": "7.0",
+      "genre": "Validation",
+      "meta": "A third passage proves dynamic 3-passage support.",
+      "paras": [
+        {"label": "A", "text": "Validation should support one, three and five passages."}
+      ],
+      "questions": {"type": "regular", "blocks": [
+        {"q": 1, "type": "tfng", "statement": "The fixture has three passages.", "answer": "TRUE", "reveal": "TRUE — This is the third passage."}
+      ]}
+    }
+  ]
+}

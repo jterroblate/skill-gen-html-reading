@@ -1,0 +1,36 @@
+{
+  "title": "IELTS Reading · Heading Inline Dropboxes Smoke",
+  "header_title": "IELTS Academic Reading · Heading Inline Dropboxes",
+  "passages": [
+    {
+      "num": 1,
+      "title": "How Small Habits Become Automatic",
+      "band": "6.5",
+      "genre": "Learning Psychology",
+      "meta": "Band 6.5 · Learning Psychology · Heading matching fixture",
+      "paras": [
+        {"label": "A", "text": "At the beginning, a new habit often feels awkward because every step requires conscious attention. People may forget the action or perform it inconsistently."},
+        {"label": "B", "text": "After several weeks, the same action can become attached to a stable cue, such as finishing breakfast or arriving at a desk."},
+        {"label": "C", "text": "Researchers warn that rewards should be meaningful but modest, because excessive rewards may distract learners from the value of the habit itself."},
+        {"label": "D", "text": "The strongest habits are flexible rather than rigid: people can adapt them when travel, illness or work pressure interrupts the normal routine."}
+      ],
+      "questions": {
+        "type": "heading",
+        "headings": [
+          ["i", "The uncomfortable first stage of a habit"],
+          ["ii", "Linking an action to a repeated cue"],
+          ["iii", "Why large rewards can become a problem"],
+          ["iv", "Adapting a routine when life changes"],
+          ["v", "A historical comparison with classroom learning"]
+        ],
+        "answers": {"A": "i", "B": "ii", "C": "iii", "D": "iv"},
+        "blocks": [
+          {"q": 1, "type": "heading_info", "label": "A", "reveal": "i — Paragraph A describes the awkward first stage when every step requires attention."},
+          {"q": 2, "type": "heading_info", "label": "B", "reveal": "ii — Paragraph B explains how an action becomes attached to a stable cue."},
+          {"q": 3, "type": "heading_info", "label": "C", "reveal": "iii — Paragraph C warns that excessive rewards can distract learners."},
+          {"q": 4, "type": "heading_info", "label": "D", "reveal": "iv — Paragraph D focuses on adapting routines when circumstances change."}
+        ]
+      }
+    }
+  ]
+}

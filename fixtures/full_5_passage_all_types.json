@@ -1,0 +1,88 @@
+{
+  "title": "IELTS Reading · Full Type Smoke",
+  "header_title": "IELTS Academic Reading · Full Type Smoke",
+  "passages": [
+    {
+      "num": 1,
+      "title": "Morning Notes",
+      "band": "5.5",
+      "genre": "Social Observation",
+      "meta": "Band 5.5 · Social Observation",
+      "paras": [
+        {"label": "A", "text": "People often keep notes to remember ordinary details."},
+        {"label": "B", "text": "Researchers say simple routines can reduce decision pressure."}
+      ],
+      "questions": {"type": "regular", "blocks": [
+        {"q": 1, "type": "mcq", "stem": "Why do people keep notes?", "options": ["A) To remember details", "B) To avoid reading", "C) To travel faster", "D) To copy signs"], "answer": "A", "reveal": "A — Paragraph A says notes help remember ordinary details."},
+        {"q": 2, "type": "tfng", "statement": "Simple routines can reduce decision pressure.", "answer": "TRUE", "reveal": "TRUE — Paragraph B states this directly."}
+      ]}
+    },
+    {
+      "num": 2,
+      "title": "Shared Gardens",
+      "band": "6.0",
+      "genre": "Community Study",
+      "meta": "Band 6.0 · Community Study",
+      "paras": [
+        {"label": "A", "text": "A shared garden gives neighbours a reason to meet."},
+        {"label": "B", "text": "Some residents prefer quiet tasks such as watering seedlings."}
+      ],
+      "questions": {"type": "regular", "blocks": [
+        {"q": 1, "type": "ynng", "statement": "The writer believes shared gardens can create social contact.", "answer": "YES", "reveal": "YES — Paragraph A says neighbours meet through the garden."},
+        {"q": 2, "type": "match", "text": "Which paragraph mentions quiet work?", "options": ["A", "B"], "answer": "B", "reveal": "B — Paragraph B mentions watering seedlings."}
+      ]}
+    },
+    {
+      "num": 3,
+      "title": "The Shape of Practice",
+      "band": "6.5",
+      "genre": "Learning Analysis",
+      "meta": "Band 6.5 · Learning Analysis",
+      "paras": [
+        {"label": "A", "text": "At first, practice feels mechanical and slow."},
+        {"label": "B", "text": "Later, small actions begin to connect into a pattern."},
+        {"label": "C", "text": "Eventually, learners can adapt the pattern to unfamiliar tasks."}
+      ],
+      "questions": {
+        "type": "heading",
+        "headings": [["i", "A flexible use of learned patterns"], ["ii", "The awkward beginning"], ["iii", "A pattern starts to form"], ["iv", "An unrelated example"]],
+        "answers": {"A": "ii", "B": "iii", "C": "i"},
+        "blocks": [
+          {"q": 1, "type": "heading_info", "label": "A", "reveal": "ii — Paragraph A describes the awkward beginning."},
+          {"q": 2, "type": "heading_info", "label": "B", "reveal": "iii — Paragraph B shows a pattern forming."},
+          {"q": 3, "type": "heading_info", "label": "C", "reveal": "i — Paragraph C describes flexible use."},
+          {"q": 4, "type": "fill", "before": "Learners adapt patterns to", "after": "tasks.", "answer": "unfamiliar", "reveal": "unfamiliar — Paragraph C uses this word."}
+        ]
+      }
+    },
+    {
+      "num": 4,
+      "title": "City Sound",
+      "band": "7.0",
+      "genre": "Urban Studies",
+      "meta": "Band 7.0 · Urban Studies",
+      "paras": [
+        {"label": "A", "text": "A city is not silent; it is layered with signals."},
+        {"label": "B", "text": "Listeners learn which sounds require attention and which can fade into the background."}
+      ],
+      "questions": {"type": "regular", "blocks": [
+        {"q": 1, "type": "summary", "pairs": [[1, "A city contains many", "signals", "."], [2, "Some sounds fade into the", "background", "."]], "reveals": ["signals — Paragraph A", "background — Paragraph B"]}
+      ]}
+    },
+    {
+      "num": 5,
+      "title": "Reading Screens",
+      "band": "7.5",
+      "genre": "Academic Analysis",
+      "meta": "Band 7.5 · Academic Analysis",
+      "paras": [
+        {"label": "A", "text": "Digital reading changes how readers scan a page."},
+        {"label": "B", "text": "Deep reading still depends on attention, context and patience."}
+      ],
+      "questions": {"type": "regular", "blocks": [
+        {"q": 1, "type": "mcq", "stem": "What does digital reading change?", "options": ["A) How readers scan", "B) How paper is made", "C) How libraries close", "D) How ink dries"], "answer": "A", "reveal": "A — Paragraph A states this."},
+        {"q": 2, "type": "tfng", "statement": "Deep reading depends partly on patience.", "answer": "TRUE", "reveal": "TRUE — Paragraph B mentions patience."}
+      ]}
+    }
+  ]
+}

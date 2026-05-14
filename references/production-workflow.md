@@ -1,115 +1,156 @@
 # Reading Player Production Workflow
 
-## Full Pipeline
+## Scope
 
-### Step 1: Define Passage Data
+This skill currently stabilizes the **JSON → standalone HTML** layer.
 
-Create a JSON file with all 5 passages. Each passage includes:
-- Title and metadata (band, genre)
-- Paragraphs with labels (A, B, C, ...)
-- Question blocks with types, stems, options, answers
+It does not parse PDF/DOCX/OCR/screenshots, does not extract questions from raw
+text, and does not run a complete agent-mediated LLM generation pipeline. Prepare
+validated JSON first, then use this skill to render and QA the interactive HTML.
+
+## One-Command Smoke Gate
+
+Before shipping changes to the skill, run:
+
+```bash
+python3 -B scripts/smoke_test.py
+```
+
+The smoke test:
+
+1. Confirms `schema/reading_data.schema.json` is valid JSON.
+2. Runs built-in schema/data validation on good fixtures.
+3. Generates temporary HTML for each good fixture.
+4. Runs `scripts/validate_reading.py` on each generated HTML.
+5. Confirms `fixtures/bad_missing_required.json` fails schema/data validation.
+6. Writes only to a system temp directory.
+
+Expected final line:
+
+```text
+SMOKE TEST PASSED ✅
+```
+
+Expected validator warning:
+
+```text
+WARNING: current output is not a strict student version because answers are embedded in HTML source/data attributes.
+```
+
+That warning is intentional for the current phase.
+
+## Production Steps
+
+### Step 1: Prepare JSON
+
+Create JSON matching `schema/reading_data.schema.json`. Use checked-in fixtures as
+examples:
+
+- `fixtures/minimal_1_passage.json`
+- `fixtures/escaping_edge_cases.json`
+- `fixtures/full_5_passage_all_types.json`
+
+Supported passage counts are **1, 3, or 5**. Each passage requires:
+
+- `num`
+- `title`
+- `paras`
+- `questions`
+
+Each paragraph requires:
+
+- `label`
+- `text`
+
+Each question block must use one supported type:
+
+- `mcq`
+- `tfng` / `true_false`
+- `ynng` / `yes_no`
+- `match`
+- `fill`
+- `summary`
+- `heading_info` for heading passages
+
+Heading passages additionally require:
+
+- `questions.headings`
+- `questions.answers`
 
 ### Step 2: Generate HTML
 
 ```bash
-python scripts/generate_reading.py \
-  --title "IELTS Reading · U01 日常节奏" \
-  --output "/path/to/刷题.html" \
-  --data /path/to/passage_data.json
+python3 -B scripts/generate_reading.py \
+  --data /path/to/reading_data.json \
+  --output /path/to/reading_practice.html
 ```
 
-### Step 3: Validate
+Generation fails before writing if required fields are missing, question types are
+unsupported, answer/options are empty, or passage count is not 1/3/5.
+
+### Step 3: Validate HTML
 
 ```bash
-python scripts/validate_reading.py "/path/to/刷题.html"
+python3 -B scripts/validate_reading.py /path/to/reading_practice.html
 ```
 
-### Step 4: Review in Browser
+Validator errors block delivery. Validator warnings must be understood and either
+accepted for this phase or resolved in a later phase.
 
-Open the HTML file in Chrome:
-```bash
-open "/path/to/刷题.html"
-```
+### Step 4: Manual Review
 
-### Step 5: Test Interactions
+Open the generated HTML only when the user has explicitly authorized browser use.
+Then manually test:
 
-1. **Tab switching**: Click P1–P5 to verify passage switching
-2. **Heading drag**: Drag headings from pool to slots before paragraphs
-3. **Submit**: Click submit to verify red/green feedback
-4. **Reveal**: Click "显示解析" buttons
-5. **Reset**: Click reset to verify all state clears
-6. **PDF Export**: Click "下载 PDF" to verify export
-7. **Score**: Verify score badge updates correctly
-8. **All question types**: Test MCQ, TFNG, Match-Select, Fill-Input
+1. Passage tab switching
+2. MCQ selection
+3. TFNG/YNNG selection
+4. Matching select
+5. Fill and summary inputs
+6. Heading drag/drop and click-heading-then-click-slot fallback
+7. Heading answer boxes render in `.passage-col` before each target paragraph, not in `.questions-col`
+8. Heading `.questions-col` contains only the title, brief instruction, and List of Headings / heading pool; it must not repeat `Paragraph A/B/C` answer-list rows
+9. Submit scoring marks correct/wrong without exposing correct headings
+9. Reveal buttons write full correct headings into the passage-side answer boxes
+10. Reset current passage clears heading slots, used pool state, feedback, reveals, and score
+10. Browser-side PDF score report, if network/CDN is available
 
-## Quick Reference
+## Validator Errors vs Warnings
 
-### Data JSON Structure
+Errors mean the output is structurally unsafe or incomplete and should not ship.
+Examples:
 
-```json
-{
-  "title": "IELTS Reading · U01 Daily Rhythm",
-  "header_title": "IELTS Academic Reading · U01 日常节奏",
-  "header_sub": "P1 \"Title\" · Band X.X-X.X · Genre",
-  "passages": [
-    {
-      "num": 1,
-      "title": "Passage Title",
-      "band": "5.5-6.0",
-      "genre": "Social Observation",
-      "meta": "Band 5.5-6.0 · Social Observation · Linked: keywords",
-      "paras": [
-        {"label": "A", "text": "Paragraph text..."}
-      ],
-      "questions": {
-        "type": "regular|heading",
-        "headings": [["i", "Heading text"], ...],  // only for heading type
-        "answers": {"A": "iii", ...},                // only for heading type
-        "blocks": [
-          {"q": 1, "type": "mcq", "stem": "...", "options": ["A) ...", "B) ..."], "answer": "A", "reveal": "..."}
-        ]
-      }
-    }
-  ]
-}
-```
+- script/body/html tag mismatch
+- duplicate closing tags
+- div imbalance
+- missing required DOM classes
+- empty passage/question/reveal text
+- missing MCQ options or answers
+- heading pool without passage-side heading slots
+- heading slots missing `data-para`, `data-q`, or full `data-answer-text`
+- heading slot count not matching target paragraph count
+- heading slots rendered in the questions column
 
-### Question Types
+Warnings currently include known product limitations. The main warning is answer
+embedding in HTML source/data attributes; this means the output is not a strict
+secure student version.
 
-| Type Field | Builder Used | Data Fields |
-|-----------|-------------|-------------|
-| `mcq` | `build_mcq()` | `q`, `stem`, `options` (list), `answer`, `reveal` |
-| `tfng` | `build_tfng()` | `q`, `statement`, `answer`, `reveal` |
-| `ynng` | `build_ynng()` | `q`, `statement`, `answer`, `reveal` |
-| `match` | `build_match_select()` | `q`, `text`, `options` (list), `answer`, `reveal` |
-| `fill` | `build_fill()` | `q`, `before`, `after`, `answer`, `width`, `reveal` |
-| `heading_info` | (inline) | `q`, `reveal` |
+## Known Limitations
 
-### Important: heading-info blocks
-For heading-matching passages, create `heading_info` blocks for each heading question (Q1–Q5 or Q1–Q6). These just show the paragraph label + reveal button. The actual drag-slot is in the passage column.
+- No raw material ingestion: PDF/DOCX/OCR/screenshots/plain text are out of scope.
+- No LLM task generation, answer evidence extraction, or agent result merge.
+- No strict student/teacher split.
+- No Word output.
+- PDF support is only a browser-side score report using CDN libraries.
+- Browser console/mobile layout gates are not automated yet.
 
-### Important: action-bar position
-The submit/reset/score bar is placed **between the tab bar and header**, not at the bottom. The PDF export section is also at the top. This keeps the layout clean and avoids wasted space.
+## Later Phases
 
-### Important: heading text display
-The `placeHeading` function reads `item.textContent.trim()` to get the **full heading text** (e.g., "iii. Recognising when change is needed"), not just the key. The display uses `<b>fullText</b>`.
+Do these after the JSON → HTML base is stable:
 
-## Common Issues
-
-### 1. Div Balance
-If divs are unbalanced, the layout will break. Always validate after generation.
-The most common cause is a missing closing `</div>` in a question block builder.
-
-### 2. Surrogates in emoji
-Use actual UTF-8 emoji characters, not surrogate escapes like `\ud83d\udd04`.
-Use `\U0001F504` (Python) or the raw emoji character directly.
-
-### 3. Passage-col heading-slot grading
-The `gradePanel()` function checks BOTH `qCol.querySelectorAll('.heading-slot')` AND
-`panel.querySelectorAll('.passage-col .heading-slot')`. If one is missing, heading
-answers won't be graded.
-
-### 4. Pool lookup
-`placeHeading` and `clickSlot` find the heading pool using
-`slot.closest('.passage-panel').querySelector('.heading-pool')`.
-This works for both passage-col and questions-col slots because both are inside `.passage-panel`.
+1. Agent/LLM task generation from raw text.
+2. Agent result merge and semantic QA.
+3. Teacher version with answers, explanations, evidence, and highlights.
+4. Strict student version that does not expose answers in source.
+5. PDF/Word export for student and teacher materials.
+6. Browser automation smoke for console errors and mobile layout.
