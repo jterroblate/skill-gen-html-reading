@@ -12,21 +12,27 @@ description: >
 
 ## Current Scope
 
-This skill is currently a **JSON → standalone HTML generator** for IELTS-style
-reading practice. It stabilizes the rendering/player layer only.
+This skill has two modules:
+
+- **Module A (pilot): teacher DOCX / source draft → raw extraction → source audit → clean structured JSON candidate.**
+- **Module B (stable): structured JSON → standalone IELTS Reading interactive HTML.**
+
+Module A is intentionally audit-first. It preserves source traces, warnings, and
+confidence instead of silently fixing source conflicts. It is currently tuned for
+IELTS Reading teacher-version documents with clear passage/question/answer-key
+structure; it is **not** a general Word layout parser.
 
 It does **not** currently support:
 
 - PDF input parsing
-- DOCX input parsing
 - OCR or screenshot understanding
-- pure-text automatic question extraction
-- full agent-mediated LLM generation / merge pipeline
-- Word export
+- arbitrary Word layout reconstruction
+- pure-text automatic question generation from unstructured prose
 - strict student-version security against viewing answers in HTML source
 
-Those are later phases. Do not present this skill as a complete raw-material →
-reading-pack generator until those stages exist.
+Do not present this skill as a fully general raw-material → reading-pack
+generator. For production, use Module A audit output first, then feed confirmed
+clean JSON into Module B.
 
 ## Output
 
@@ -48,6 +54,8 @@ reveal blocks. The output is fine for practice UX but is **not a strict secure
 student version**.
 
 ## Quick Start
+
+### Module B: JSON → HTML
 
 From this skill directory:
 
@@ -71,6 +79,29 @@ python3 -B scripts/smoke_test.py
 
 Smoke tests generate temporary HTML under a system temp directory and do not write
 outputs into the skill directory.
+
+### Module A: DOCX → clean JSON candidate
+
+```bash
+python3 -B scripts/build_from_docx.py \
+  --docx /path/to/teacher.docx \
+  --out-dir /path/to/docx_to_json_audit \
+  --allow-partial
+```
+
+Typical outputs:
+
+- `raw_docx_extraction.json`
+- `source_audit.json`
+- `source_audit.md`
+- `clean_reading_data_candidate.json`
+- `extraction_warnings.json`
+
+Run Module A smoke tests:
+
+```bash
+python3 -B scripts/smoke_test_docx_pipeline.py
+```
 
 ## Input Data Contract
 

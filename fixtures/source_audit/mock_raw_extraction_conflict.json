@@ -1,0 +1,37 @@
+{
+  "schema_version": "reading_docx_raw_v1",
+  "input_file": "fixture/conflict.docx",
+  "generated_at": "2026-05-15T00:00:00Z",
+  "paragraphs": [],
+  "passages": [
+    {
+      "passage_id": 1,
+      "title": "Conflict Passage",
+      "band": "6.0",
+      "genre": "Fixture",
+      "linked_topics": "testing",
+      "source_locations": [1, 2],
+      "source_end": 20,
+      "paragraphs": [
+        {"label": "A", "text": "The source says there is no single perfect ratio.", "source_index": 3}
+      ],
+      "question_area": [
+        {"index": 4, "text": "Do the statements agree? Write TRUE, FALSE, or NOT GIVEN.", "role": "instruction"},
+        {"index": 5, "text": "1. There is a single perfect ratio. [FALSE]", "role": "question_or_option"},
+        {"index": 6, "text": "Complete the summary. Choose NO MORE THAN TWO WORDS.", "role": "instruction"},
+        {"index": 7, "text": "The passage says there is no (2) ______ ratio.", "role": "summary_text"},
+        {"index": 8, "text": "Answers: (9) unrelated", "role": "answer_line"}
+      ],
+      "answer_key": [
+        {"index": 9, "text": "1. TRUE", "role": "answer_key_entry"},
+        {"index": 10, "text": "2. perfect", "role": "answer_key_entry"}
+      ],
+      "heading_list": [],
+      "heading_answers": {},
+      "summary_answer_lines": [
+        {"index": 8, "text": "Answers: (9) unrelated", "role": "answer_line"}
+      ]
+    }
+  ],
+  "extraction_warnings": []
+}

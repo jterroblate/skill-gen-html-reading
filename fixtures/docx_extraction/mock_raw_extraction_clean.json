@@ -1,0 +1,44 @@
+{
+  "schema_version": "reading_docx_raw_v1",
+  "input_file": "fixture/mock.docx",
+  "generated_at": "2026-05-15T00:00:00Z",
+  "paragraphs": [],
+  "passages": [
+    {
+      "passage_id": 1,
+      "title": "Mock Passage",
+      "band": "6.0",
+      "genre": "Fixture",
+      "linked_topics": "testing",
+      "source_locations": [1, 2],
+      "source_end": 20,
+      "paragraphs": [
+        {"label": "A", "text": "A simple passage paragraph with a clear answer.", "source_index": 3}
+      ],
+      "question_area": [
+        {"index": 4, "text": "Choose the correct letter, A, B, C or D.", "role": "instruction"},
+        {"index": 5, "text": "1. What is the passage mainly for?", "role": "question_or_option"},
+        {"index": 6, "text": "A. Entertainment", "role": "option"},
+        {"index": 7, "text": "B. Testing [ANSWER]", "role": "option"},
+        {"index": 8, "text": "C. Travel", "role": "option"},
+        {"index": 9, "text": "D. Shopping", "role": "option"},
+        {"index": 10, "text": "Do the statements agree? Write TRUE, FALSE, or NOT GIVEN.", "role": "instruction"},
+        {"index": 11, "text": "2. The paragraph contains a clear answer. [TRUE]", "role": "question_or_option"},
+        {"index": 12, "text": "Complete the summary. Choose NO MORE THAN TWO WORDS.", "role": "instruction"},
+        {"index": 13, "text": "The paragraph has a (3) ______ answer.", "role": "summary_text"},
+        {"index": 14, "text": "Answers: (3) clear", "role": "answer_line"}
+      ],
+      "answer_key": [
+        {"index": 15, "text": "1. B", "role": "answer_key_entry"},
+        {"index": 16, "text": "2. TRUE", "role": "answer_key_entry"},
+        {"index": 17, "text": "3. clear", "role": "answer_key_entry"}
+      ],
+      "heading_list": [],
+      "heading_answers": {},
+      "summary_answer_lines": [
+        {"index": 14, "text": "Answers: (3) clear", "role": "answer_line"}
+      ]
+    }
+  ],
+  "extraction_warnings": []
+}

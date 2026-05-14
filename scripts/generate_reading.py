@@ -307,6 +307,24 @@ def build_passage(p_num, pc_html, qc_html, active=False):
     return f'<!-- ==================== PASSAGE {h(p_num)} ==================== -->\n<div class="{cls}" data-p="{a(p_num)}">\n<div class="passage-col">\n{pc_html}\n</div>\n\n<div class="questions-col" id="qcol{a(p_num)}">\n{qc_html}\n</div>\n</div>'
 
 
+def max_question_number(blocks, minimum=0):
+    max_q = minimum
+    for blk in blocks:
+        if blk.get('type') == 'summary':
+            for pair in blk.get('pairs', []):
+                if pair:
+                    try:
+                        max_q = max(max_q, int(pair[0]))
+                    except Exception:
+                        pass
+        else:
+            try:
+                max_q = max(max_q, int(blk.get('q', 0)))
+            except Exception:
+                pass
+    return max_q
+
+
 def build_question_blocks(blocks):
     lines = []
     for blk in blocks:
@@ -353,8 +371,9 @@ def generate(data, output_path):
                 pc_lines.append(build_reveal(q_num, reveal_text))
                 pc_lines.append(build_para(label, para['text']))
             non_heading_blocks = [b for b in blocks if b.get('type') != 'heading_info']
+            q_end = max_question_number(non_heading_blocks, minimum=len(paras))
             qc_lines = [
-                f'<div style="font-size:15px;font-weight:600;margin-bottom:12px;color:var(--accent);font-family:var(--ui-font)">Questions 1–{len(paras)+len(non_heading_blocks)}</div>',
+                f'<div style="font-size:15px;font-weight:600;margin-bottom:12px;color:var(--accent);font-family:var(--ui-font)">Questions 1–{q_end}</div>',
                 '<div class="q-inst">将 headings 拖到左侧对应段落前；也可以先点击一个 heading，再点击左侧段落前的答题框。</div>',
                 '<div class="q-block heading-pool-block"><div class="q-text"><b>List of Headings</b></div>',
                 build_heading_pool(p_num, headings_data),
@@ -364,7 +383,8 @@ def generate(data, output_path):
         else:
             for para in paras:
                 pc_lines.append(build_para(para['label'], para['text']))
-            qc_lines = [f'<div style="font-size:15px;font-weight:600;margin-bottom:12px;color:var(--accent);font-family:var(--ui-font)">Questions 1–{len(blocks)}</div>']
+            q_end = max_question_number(blocks, minimum=len(blocks))
+            qc_lines = [f'<div style="font-size:15px;font-weight:600;margin-bottom:12px;color:var(--accent);font-family:var(--ui-font)">Questions 1–{q_end}</div>']
             qc_lines.extend(build_question_blocks(blocks))
         all_sections.append(build_passage(p_num, '\n'.join(pc_lines), '\n'.join(qc_lines), active=(idx == 0)))
 
