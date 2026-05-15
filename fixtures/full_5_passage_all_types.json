@@ -66,7 +66,7 @@
         {"label": "B", "text": "Listeners learn which sounds require attention and which can fade into the background."}
       ],
       "questions": {"type": "regular", "blocks": [
-        {"q": 1, "type": "summary", "pairs": [[1, "A city contains many", "signals", "."], [2, "Some sounds fade into the", "background", "."]], "reveals": ["signals — Paragraph A", "background — Paragraph B"]}
+        {"q": 1, "type": "summary", "pairs": [[1, "A city contains many", "signals", ", while some sounds fade into the", 2, "background", "."]], "reveals": ["signals — Paragraph A", "background — Paragraph B"]}
       ]}
     },
     {

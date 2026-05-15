@@ -148,7 +148,22 @@ def validate(path: str) -> bool:
             errors.append("match-select missing data-ans")
     for attrs in attrs_for_class(parser, "fill-input"):
         if not attrs.get("data-ans"):
-            errors.append("fill-input missing data-ans")
+            q = attrs.get("data-q", "?")
+            errors.append(f"fill-input missing data-ans (question Q{q}; likely summary/fill block answer missing)")
+    # Contextual summary diagnostics: locate malformed generated summary inputs by passage/block/question.
+    panel_starts_for_summary = [m.start() for m in re.finditer(r'<div class="passage-panel\b', html)]
+    for pi, start in enumerate(panel_starts_for_summary, 1):
+        end = panel_starts_for_summary[pi] if pi < len(panel_starts_for_summary) else html.find('<script>', start)
+        section = html[start:end if end > 0 else len(html)]
+        for bi, m in enumerate(re.finditer(r'<div class="summary-paragraph"[\s\S]*?</div>', section), 1):
+            block = m.group(0)
+            q_nums = re.findall(r'class="fill-input"[^>]*data-q="([^"]*)"', block)
+            bad_inputs = [x.group(0) for x in re.finditer(r'<input[^>]*class="[^"]*fill-input[^"]*"[^>]*>', block) if 'data-ans=' not in x.group(0)]
+            if bad_inputs:
+                errors.append(f"Passage {pi} summary block {bi} malformed: {len(bad_inputs)} fill-input(s) missing data-ans; question numbers: {q_nums or ['?']}")
+            if len(q_nums) != len(set(q_nums)):
+                errors.append(f"Passage {pi} summary block {bi} has duplicate summary question numbers: {q_nums}")
+
     heading_pools = attrs_for_class(parser, "heading-pool")
     heading_slots = attrs_for_class(parser, "heading-slot")
     if heading_pools:

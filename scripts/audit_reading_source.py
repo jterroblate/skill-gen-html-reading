@@ -92,6 +92,24 @@ def audit(raw: dict[str, Any]) -> dict[str, Any]:
     question_count = 0
     answer_count = 0
     paragraph_count = sum(len(p.get("paragraphs", [])) for p in raw.get("passages", []))
+    passage_count = len(raw.get("passages", []))
+    all_paragraphs = raw.get("paragraphs", [])
+    question_marker_count = sum(1 for x in all_paragraphs if x.get("role") == "questions_marker")
+    question_like_count = sum(1 for x in all_paragraphs if Q_LINE_RE.match(x.get("text", "")))
+    looks_like_full_unit = question_marker_count >= 3 or question_like_count >= 20 or passage_count in (0, 1) and question_marker_count > 0
+
+    if passage_count == 0:
+        issues.append(issue(seq, "blocking", "passage_detection_failure", 0, None, [],
+                            "No passages were extracted. Possible causes: title pattern unsupported; meta line pattern unsupported; missing explicit passage separator; paragraph style inconsistent.",
+                            {"question_markers": question_marker_count, "question_like_lines": question_like_count},
+                            suggested="Inspect DOCX title/meta formatting and update extraction patterns before normalization.", confidence=0.95, needs=True))
+        seq += 1
+    elif passage_count < 3 and looks_like_full_unit:
+        issues.append(issue(seq, "major", "passage_detection_failure", 0, None, [],
+                            f"Only {passage_count} passage(s) extracted from a source that looks like a complete IELTS reading set. Possible causes: title pattern unsupported; meta line pattern unsupported; missing explicit passage separator; paragraph style inconsistent.",
+                            {"question_markers": question_marker_count, "question_like_lines": question_like_count},
+                            suggested="Do not treat this as PASS; verify passage boundaries and rerun extraction.", confidence=0.9, needs=True))
+        seq += 1
 
     for w in raw.get("extraction_warnings", []):
         issues.append(issue(seq, "minor", w.get("type", "extraction_warning"), w.get("passage_id", 0) or 0, None,
@@ -194,7 +212,7 @@ def audit(raw: dict[str, Any]) -> dict[str, Any]:
         "input_file": raw.get("input_file"),
         "overall_verdict": verdict,
         "summary": {
-            "passage_count": len(raw.get("passages", [])),
+            "passage_count": passage_count,
             "paragraph_count": paragraph_count,
             "question_count_estimate": question_count,
             "answer_count_estimate": answer_count,

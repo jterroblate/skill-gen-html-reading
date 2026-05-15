@@ -8,6 +8,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+from docx import Document
+
 ROOT = Path(__file__).resolve().parents[1]
 AUDIT = ROOT / "scripts" / "audit_reading_source.py"
 NORMALIZE = ROOT / "scripts" / "normalize_reading_json.py"
@@ -51,6 +53,31 @@ def main() -> int:
         print(r.stdout.strip())
         if r.returncode:
             print(r.stderr); errors.append("clean generated HTML validation failed")
+
+        # Synthetic U03-style DOCX: Reading Passage N — Title + Level: Band meta, no END separators.
+        # This specifically guards the generalized passage detection fallback.
+        docx_path = td / "u03_style_no_end.docx"
+        doc = Document()
+        for n, title, band, genre in [(1, "First New Format", "6.0–6.5", "Analytical Exposition"), (2, "Second New Format", "6.5–7.0", "Social Study")]:
+            doc.add_paragraph(f"Reading Passage {n} — {title}")
+            doc.add_paragraph(f"Level: Band {band} · {genre}")
+            doc.add_paragraph(f"[A] Paragraph A for passage {n}.")
+            doc.add_paragraph(f"[B] Paragraph B for passage {n}.")
+            doc.add_paragraph("Questions")
+            doc.add_paragraph(f"{n}. A direct test statement. [TRUE]")
+        doc.save(docx_path)
+        raw_u03 = td / "u03_style_raw.json"
+        r = run([sys.executable, "-B", str(ROOT / "scripts" / "extract_docx_to_reading_json.py"), "--docx", str(docx_path), "--output", str(raw_u03)])
+        print(r.stdout.strip())
+        if r.returncode:
+            print(r.stderr); errors.append("u03-style extraction command failed")
+        else:
+            raw_data = json.loads(raw_u03.read_text())
+            if len(raw_data.get("passages", [])) != 2:
+                errors.append(f"u03-style fixture expected 2 passages, got {len(raw_data.get('passages', []))}")
+            metas = [(p.get("band"), p.get("genre")) for p in raw_data.get("passages", [])]
+            if not metas or metas[0][0] != "6.0–6.5" or metas[0][1] != "Analytical Exposition":
+                errors.append(f"u03-style fixture meta parse failed: {metas}")
 
         # Conflict fixture must detect answer_key_conflict + summary mismatch.
         audit_json2 = td / "conflict_audit.json"

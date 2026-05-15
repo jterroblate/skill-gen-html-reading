@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 GEN = ROOT / "scripts" / "generate_reading.py"
 
 Q_RE = re.compile(r"^(\d+)\.\s+(.*)")
-OPT_RE = re.compile(r"^([A-D])\.\s+(.*)")
+OPT_RE = re.compile(r"^([A-D])[\.)]\s+(.*)")
 EMBED_RE = re.compile(r"\[([A-Z ]+|TRUE|FALSE|NOT GIVEN|YES|NO|ANSWER)\]", re.I)
 SUMMARY_BLANK_RE = re.compile(r"\((\d+)\)\s*_+")
 
@@ -27,7 +27,36 @@ def load_generator():
 
 
 def strip_answer(text: str) -> str:
-    return EMBED_RE.sub("", text).strip()
+    text = EMBED_RE.sub("", text).strip()
+    text = re.sub(r"\s+(TRUE|FALSE|NOT GIVEN|YES|NO)\s*$", "", text, flags=re.I).strip()
+    text = re.sub(r"\s+([A-F])\s*$", "", text).strip()
+    text = re.sub(r"\s+([ivx]+)\s*$", "", text, flags=re.I).strip()
+    return text
+
+
+def trailing_answer(text: str) -> str | None:
+    t = text.strip()
+    m = EMBED_RE.search(t)
+    if m:
+        return m.group(1).upper().strip()
+    m = re.search(r"\s+(TRUE|FALSE|NOT GIVEN|YES|NO)\s*$", t, re.I)
+    if m:
+        return m.group(1).upper()
+    m = re.search(r"\s+([A-F])\s*$", t)
+    if m:
+        return m.group(1)
+    m = re.search(r"\s+([ivx]+)\s*$", t, re.I)
+    if m:
+        return m.group(1).lower()
+    return None
+
+
+def is_marked_option(item: dict[str, Any]) -> bool:
+    for run in item.get("runs", []):
+        color = (run.get("color") or "").upper()
+        if run.get("bold") and color and color not in {"000000", "777777"}:
+            return True
+    return False
 
 
 def parse_key(answer_key: list[dict[str, Any]]) -> dict[int, str]:
@@ -57,12 +86,22 @@ def parse_questions(p: dict[str, Any], audit: dict[str, Any], confirmations: dic
     blocks = []
     i = 0
     mode = "regular"
-    if p.get("heading_list") and p.get("heading_answers"):
+    if p.get("heading_list"):
         mode = "heading"
     while i < len(qarea):
         text = qarea[i]["text"].strip()
         # Skip instructions/headings/heading answer lines; heading matching is represented at passage level.
-        if qarea[i]["role"] in {"instruction", "heading_item", "heading_answer", "answer_line"}:
+        if qarea[i]["role"] in {"instruction", "heading_item", "answer_line"}:
+            i += 1; continue
+        if mode == "heading":
+            hm = re.match(r"^\d+\.\s*Paragraph\s+([A-Z])\s+([ivx]+)\b", text, re.I)
+            if hm:
+                label, ans = hm.group(1), hm.group(2).lower()
+                p.setdefault("heading_answers", {})[label] = ans
+                qn = int(Q_RE.match(text).group(1)) if Q_RE.match(text) else len(p.get("heading_answers", {}))
+                blocks.append({"q": qn, "type": "heading_info", "label": label, "reveal": f"{ans} — extracted from teacher heading answer line."})
+                i += 1; continue
+        if qarea[i]["role"] == "heading_answer":
             i += 1; continue
         if "______" in text:
             nums = [int(x) for x in SUMMARY_BLANK_RE.findall(text)]
@@ -92,10 +131,7 @@ def parse_questions(p: dict[str, Any], audit: dict[str, Any], confirmations: dic
         if not m:
             i += 1; continue
         q = int(m.group(1)); stem = strip_answer(m.group(2))
-        embedded = None
-        em = EMBED_RE.search(text)
-        if em:
-            embedded = em.group(1).upper().strip()
+        embedded = trailing_answer(text)
         # MCQ if next lines are A-D options.
         opts = []
         j = i + 1
@@ -104,7 +140,7 @@ def parse_questions(p: dict[str, Any], audit: dict[str, Any], confirmations: dic
             assert mo
             opt_text = strip_answer(qarea[j]["text"].strip())
             opts.append(opt_text)
-            if "[ANSWER]" in qarea[j]["text"].upper():
+            if "[ANSWER]" in qarea[j]["text"].upper() or is_marked_option(qarea[j]):
                 embedded = mo.group(1)
             j += 1
         if opts:
