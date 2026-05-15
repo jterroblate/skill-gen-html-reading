@@ -16,6 +16,11 @@ def h(value: Any) -> str:
 def a(value: Any) -> str:
     return html.escape(str(value), quote=True)
 
+LEAK_MARK_RE = re.compile(r"\s*(?:[✓✔√]|\[(?:correct|answer)\]|\((?:correct|answer)\)|\bCorrect(?:\s+answer)?\b|\bAnswer:\s*)\s*", re.I)
+
+def clean_student_visible(value: Any) -> str:
+    return re.sub(r"\s+", " ", LEAK_MARK_RE.sub(" ", str(value))).strip()
+
 
 SUPPORTED_QTYPES = {"mcq", "tfng", "true_false", "ynng", "yes_no", "match", "fill", "summary", "heading_info"}
 
@@ -310,23 +315,23 @@ def build_para(label, text):
 
 
 def build_mcq(num, stem, options, answer, reveal=None):
-    opts = '\n'.join(f'<div class="mcq-opt" onclick="selectMCQ(this)">{h(opt)}</div>' for opt in options)
-    return f'<div class="q-block"><div class="q-text"><span class="num">{h(num)}.</span> {h(stem)}</div>\n<div class="mcq-group" data-q="{a(num)}" data-ans="{a(answer)}">{opts}</div>\n{build_reveal(num, reveal or answer)}</div>'
+    opts = '\n'.join(f'<div class="mcq-opt" onclick="selectMCQ(this)">{h(clean_student_visible(opt))}</div>' for opt in options)
+    return f'<div class="q-block"><div class="q-text"><span class="num">{h(num)}.</span> {h(clean_student_visible(stem))}</div>\n<div class="mcq-group" data-q="{a(num)}" data-ans="{a(answer)}">{opts}</div>\n{build_reveal(num, reveal or answer)}</div>'
 
 
 def build_tfng(num, statement, answer, reveal=None):
     btns = ''.join(f'<div class="tfng-btn" onclick="selectTFNG(this)">{v}</div>' for v in ['TRUE', 'FALSE', 'NOT GIVEN'])
-    return f'<div class="q-block"><div class="q-text"><span class="num">{h(num)}.</span> {h(statement)}</div>\n<div class="tfng-group" data-q="{a(num)}" data-ans="{a(answer)}">{btns}</div>\n{build_reveal(num, reveal or answer)}</div>'
+    return f'<div class="q-block"><div class="q-text"><span class="num">{h(num)}.</span> {h(clean_student_visible(statement))}</div>\n<div class="tfng-group" data-q="{a(num)}" data-ans="{a(answer)}">{btns}</div>\n{build_reveal(num, reveal or answer)}</div>'
 
 
 def build_ynng(num, statement, answer, reveal=None):
     btns = ''.join(f'<div class="ynng-btn" onclick="selectTFNG(this)">{v}</div>' for v in ['YES', 'NO', 'NOT GIVEN'])
-    return f'<div class="q-block"><div class="q-text"><span class="num">{h(num)}.</span> {h(statement)}</div>\n<div class="ynng-group" data-q="{a(num)}" data-ans="{a(answer)}">{btns}</div>\n{build_reveal(num, reveal or answer)}</div>'
+    return f'<div class="q-block"><div class="q-text"><span class="num">{h(num)}.</span> {h(clean_student_visible(statement))}</div>\n<div class="ynng-group" data-q="{a(num)}" data-ans="{a(answer)}">{btns}</div>\n{build_reveal(num, reveal or answer)}</div>'
 
 
 def build_match_select(num, text, options, answer, reveal=None):
     opts = ''.join(f'<option value="{a(v)}">{h(v)}</option>' for v in options)
-    return f'<div class="q-block"><div class="q-text"><span class="num">{h(num)}.</span> {h(text)}</div>\n<select class="match-select" data-q="{a(num)}" data-ans="{a(answer)}"><option value="">— 选择 —</option>{opts}</select>\n{build_reveal(num, reveal or answer)}</div>'
+    return f'<div class="q-block"><div class="q-text"><span class="num">{h(num)}.</span> {h(clean_student_visible(text))}</div>\n<select class="match-select" data-q="{a(num)}" data-ans="{a(answer)}"><option value="">— 选择 —</option>{opts}</select>\n{build_reveal(num, reveal or answer)}</div>'
 
 
 def build_fill(num, text_before, text_after, answer, width=140, reveal=None):

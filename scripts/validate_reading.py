@@ -53,6 +53,10 @@ def text_inside_blocks(html: str, cls: str):
     return [re.sub(r'<[^>]+>', '', m.group(1)).strip() for m in pattern.finditer(html)]
 
 
+def strip_tags(fragment: str) -> str:
+    return re.sub(r'<[^>]+>', '', fragment)
+
+
 def validate(path: str) -> bool:
     html_path = Path(path)
     html = html_path.read_text(encoding="utf-8")
@@ -226,7 +230,24 @@ def validate(path: str) -> bool:
             if re.search(r'<select[^>]*class="[^"]*heading-select', questions_col, flags=re.I):
                 errors.append(f"Heading passage section {idx}: questions column still contains legacy heading-select controls")
 
-    # 5. Answer leakage policy warning.
+    # 5. Student-visible answer leakage and internal-template reveal checks.
+    mcq_visible = [strip_tags(m.group(1)) for m in re.finditer(r'<div class="mcq-opt"[^>]*>(.*?)</div>', html, re.I | re.S)]
+    for i, txt in enumerate(mcq_visible, 1):
+        if re.search(r'[✓✔√]|\[(?:correct|answer)\]|\((?:correct|answer)\)|\bCorrect(?:\s+answer)?\b|\bAnswer:', txt, re.I):
+            errors.append(f"MCQ visible option {i} leaks answer marker: {txt[:80]}")
+    q_visible = text_inside_blocks(html, "q-text")
+    for i, txt in enumerate(q_visible, 1):
+        if re.search(r'\[(?:TRUE|FALSE|NOT GIVEN|YES|NO)\]', txt, re.I):
+            errors.append(f"Question text {i} leaks inline answer marker: {txt[:80]}")
+    reveal_texts_full = text_inside_blocks(html, "answer-reveal")
+    internal_phrases = ["extracted from teacher answer key", "marked option", "source trace", "raw extraction", "normalizer fallback"]
+    for i, txt in enumerate(reveal_texts_full, 1):
+        low = txt.lower()
+        hit = next((p for p in internal_phrases if p in low), None)
+        if hit:
+            warnings.append(f"Reveal {i} contains internal/template phrase {hit!r}")
+
+    # 6. Answer leakage policy warning.
     if "data-ans=" in html or "answer-reveal" in html:
         warnings.append("current output is not a strict student version because answers are embedded in HTML source/data attributes.")
 
