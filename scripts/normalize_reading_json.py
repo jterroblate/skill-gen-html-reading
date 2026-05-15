@@ -118,6 +118,12 @@ def parse_key_entry(text: str) -> tuple[int, str, str] | None:
         ans = clean_visible(m3.group(1)).strip()
         if ans:
             return q, ans, rest
+    # Same format but with space before Paragraph (no dash): "carriers Paragraph A: ..."
+    m4 = re.match(r"([A-Za-z]+)\s+Paragraph\s+([A-F]):(.*)$", rest, re.I)
+    if m4:
+        ans = clean_visible(m4.group(1)).strip()
+        if ans:
+            return q, ans, rest
     # Bare fill answer in an answer key, e.g. "3. clear".
     bare = clean_visible(rest)
     if bare and len(bare.split()) <= 4:
@@ -192,10 +198,23 @@ def parse_questions(p: dict[str, Any], audit: dict[str, Any], confirmations: dic
     i = 0
     mode = "heading" if p.get("heading_list") else "regular"
     seen = set()
+    # Track summary context from [text] items with (N) markers
+    summary_context_text = ""
+    summary_context_q_range = (0, 0)
+    
     while i < len(qarea):
         item = qarea[i]
         text = item["text"].strip()
         role = item.get("role")
+        # Collect context from [text] items containing question-number markers
+        if role == "text" and "(" in text or role == "instruction" and "NO MORE THAN TWO WORDS" in text:
+            if role == "instruction":
+                # Next text item may be the summary context
+                if i + 1 < len(qarea) and qarea[i + 1].get("role") == "text" and re.search(r"\((\d+)\)", qarea[i + 1].get("text", "")):
+                    summary_context_text = qarea[i + 1]["text"]
+                    nums = [int(x) for x in re.findall(r"\((\d+)\)", summary_context_text)]
+                    if nums:
+                        summary_context_q_range = (min(nums), max(nums))
         if role in {"instruction", "heading_item", "answer_line"} or text.lower().startswith(("list of headings", "distractors:", "explanations:", "speaking-transfer")):
             i += 1; continue
         if role == "answer_key_entry" or item_is_explanation(item):
@@ -210,7 +229,13 @@ def parse_questions(p: dict[str, Any], audit: dict[str, Any], confirmations: dic
                     if parsed:
                         q, ans, exp = parsed
                         if q not in seen and ans and not re.match(r"^(TRUE|FALSE|NOT GIVEN|YES|NO|[A-F]|[ivx]+)$", ans, re.I):
-                            recovered.append({"q": q, "type": "fill", "before": "", "after": "", "answer": ans, "reveal": reveal_from_explanation(ans, exp)})
+                            # Extract context from explanation text
+                            exp_clean2 = clean_visible(exp or "")
+                            exp_clean2 = re.sub(r"^\d+\.\s*", "", exp_clean2).strip()
+                            exp_clean2 = re.sub(rf"^{re.escape(str(ans))}\s*[—–:\s]+", "", exp_clean2, flags=re.I).strip()
+                            exp_clean2 = re.split(r"\s+\d+\.\s+", exp_clean2)[0].strip()
+                            fill_ctx = exp_clean2[:120] if exp_clean2 and len(exp_clean2) > 3 else ""
+                            recovered.append({"q": q, "type": "fill", "before": "", "after": fill_ctx, "answer": ans, "reveal": reveal_from_explanation(ans, exp)})
                 blocks.extend(recovered); seen.update(b["q"] for b in recovered)
                 i += 1; continue
         if mode == "heading":
@@ -287,7 +312,19 @@ def parse_questions(p: dict[str, Any], audit: dict[str, Any], confirmations: dic
         if direct_entry and not has_following_options:
             _q, _ans, _exp = direct_entry
             if _q == q and _ans and not re.match(r"^(TRUE|FALSE|NOT GIVEN|YES|NO|[A-F]|[ivx]+)$", _ans, re.I):
-                blocks.append({"q": q, "type": "fill", "before": "", "after": "", "answer": _ans, "reveal": reveal_from_explanation(_ans, _exp)})
+                # Try to extract context from the question text/explanation
+                fill_before = ""
+                fill_after = ""
+                exp_clean = clean_visible(_exp or "")
+                # Strip leading "Q. " prefix
+                exp_part = re.sub(r"^\d+\.\s*", "", exp_clean).strip()
+                # Strip leading answer and following dash/colon
+                exp_part = re.sub(rf"^{re.escape(str(_ans))}\s*[—–:\s]+", "", exp_part, flags=re.I).strip()
+                # Take just the first sentence/segment before a numbered separator
+                exp_part = re.split(r"\s+\d+\.\s+", exp_part)[0].strip()
+                if exp_part and len(exp_part) > 3:
+                    fill_after = exp_part[:120]
+                blocks.append({"q": q, "type": "fill", "before": fill_before, "after": fill_after, "answer": _ans, "reveal": reveal_from_explanation(_ans, _exp)})
                 seen.add(q); i += 1; continue
         stem = strip_answer(rest)
         embedded = trailing_answer(text)
