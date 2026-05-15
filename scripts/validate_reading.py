@@ -210,8 +210,8 @@ def validate(path: str) -> bool:
                 errors.append(f"Heading passage section {idx}: heading drop boxes must be inside passage column")
             if qc_slots:
                 errors.append(f"Heading passage section {idx}: heading drop boxes must not be in questions column")
-            if pc_slots != paras:
-                errors.append(f"Heading passage section {idx}: heading slot count {pc_slots} must match paragraph count {paras}")
+            if pc_slots > paras:
+                errors.append(f"Heading passage section {idx}: heading slot count {pc_slots} exceeds paragraph count {paras}")
             if rows != pc_slots:
                 errors.append(f"Heading passage section {idx}: heading-drop-row count {rows} must match heading slot count {pc_slots}")
             if not re.search(r'class="heading-drop-row"[\s\S]*?class="heading-slot"[\s\S]*?<p class="para"', passage_col):

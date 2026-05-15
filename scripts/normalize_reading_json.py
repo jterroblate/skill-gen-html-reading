@@ -214,32 +214,66 @@ def parse_questions(p: dict[str, Any], audit: dict[str, Any], confirmations: dic
                 blocks.extend(recovered); seen.update(b["q"] for b in recovered)
                 i += 1; continue
         if mode == "heading":
+            # Inline heading answer: 1. Paragraph A iii
             hm = re.match(r"^(\d+)\.\s*Paragraph\s+([A-Z])\s+([ivx]+)\b(.*)$", text, re.I)
             if hm:
                 qn, label, ans = int(hm.group(1)), hm.group(2), hm.group(3).lower()
                 p.setdefault("heading_answers", {})[label] = ans
                 blocks.append({"q": qn, "type": "heading_info", "label": label, "reveal": reveal_from_explanation(ans, text)})
                 seen.add(qn); i += 1; continue
+            # Catch heading question with blank (e.g. "1. Paragraph A ______") — skip as summary
+            if re.match(r"^(\d+)\.\s*Paragraph\s+([A-Z])\s+_+", text, re.I):
+                qn = int(re.match(r"^(\d+)", text).group(1))
+                seen.add(qn); i += 1; continue
         if "______" in text:
             nums = [int(x) for x in SUMMARY_BLANK_RE.findall(text)]
+            # Fallback: unnumbered blanks — count consecutive underscores and assign next available Q
+            if not nums:
+                blank_count = len(re.findall(r'_{3,}', text))
+                if blank_count > 0:
+                    # Determine next available question number from seen only
+                    # (key dict contains answers for future blanks too)
+                    seen_ints = {int(s) for s in seen if str(s).isdigit()}
+                    start_q = max(seen_ints) + 1 if seen_ints else max(key.keys()) + 1 if key else 1
+                    nums = list(range(start_q, start_q + blank_count))
             if nums:
                 pairs = []
                 reveals = []
-                cursor = 0
-                for n in nums:
-                    marker = f"({n})"
-                    pos = text.find(marker, cursor)
-                    before = text[cursor:pos]
-                    after_start = pos + len(marker)
-                    while after_start < len(text) and text[after_start] in " _":
-                        after_start += 1
-                    next_positions = [text.find(f"({m})", after_start) for m in nums if m > n]
-                    next_positions = [x for x in next_positions if x >= 0]
-                    next_pos = min(next_positions) if next_positions else len(text)
-                    ans = answer_for(n, None, key)
-                    pairs.append([n, clean_visible(before), ans, clean_visible(text[after_start:next_pos])])
-                    reveals.append(key_reveal(n, ans, key))
-                    seen.add(n); cursor = next_pos
+                # Check if these were fallback-generated numbers (no (N) markers in text)
+                has_markers = any(f"({n})" in text for n in nums)
+                if has_markers:
+                    cursor = 0
+                    for n in nums:
+                        marker = f"({n})"
+                        pos = text.find(marker, cursor)
+                        before = text[cursor:pos]
+                        after_start = pos + len(marker)
+                        while after_start < len(text) and text[after_start] in " _":
+                            after_start += 1
+                        next_positions = [text.find(f"({m})", after_start) for m in nums if m > n]
+                        next_positions = [x for x in next_positions if x >= 0]
+                        next_pos = min(next_positions) if next_positions else len(text)
+                        ans = answer_for(n, None, key)
+                        pairs.append([n, clean_visible(before), ans, clean_visible(text[after_start:next_pos])])
+                        reveals.append(key_reveal(n, ans, key))
+                        seen.add(n); cursor = next_pos
+                else:
+                    # Unnumbered blanks: split on ___ positions, assign sequentially
+                    blank_re = re.compile(r"_{3,}")
+                    prev_end = 0
+                    for n in nums:
+                        m = blank_re.search(text, prev_end)
+                        if not m:
+                            break
+                        before = text[prev_end:m.start()]
+                        after_start = m.end()
+                        after_end = blank_re.search(text, after_start)
+                        after = text[after_start:after_end.start()] if after_end else text[after_start:]
+                        ans = answer_for(n, None, key)
+                        pairs.append([n, clean_visible(before), ans, clean_visible(after)])
+                        reveals.append(key_reveal(n, ans, key))
+                        seen.add(n)
+                        prev_end = after_end.end() if after_end else len(text)
                 blocks.append({"q": nums[0], "type": "summary", "pairs": pairs, "reveals": reveals})
             i += 1; continue
         m = Q_RE.match(text)
@@ -290,6 +324,41 @@ def parse_questions(p: dict[str, Any], audit: dict[str, Any], confirmations: dic
             blocks.append({"q": q, "type": "fill", "before": stem if stem and stem != ans else "", "after": "", "answer": ans, "reveal": key_reveal(q, ans, key, explanation)})
             seen.add(q); i = next_i; continue
         i += 1
+    # Post-loop: if mode is heading but no heading_answers were extracted from inline QA,
+    # try to extract them from the answer_key section.
+    if mode == "heading" and not p.get("heading_answers"):
+        # Build qnum → paragraph label from question_area (e.g. "1. Paragraph A ______")
+        q_to_label = {}
+        for x in qarea:
+            m = re.match(r"^(\d+)\.\s*Paragraph\s+([A-Z])\b", x.get("text", ""), re.I)
+            if m:
+                q_to_label[int(m.group(1))] = m.group(2)
+        for ak in p.get("answer_key", []):
+            txt = ak.get("text", "").strip()
+            # 1. iii — Paragraph A ...  (roman BEFORE paragraph label)
+            m = re.match(r"^(\d+)\.\s*([ivx]+)\b\s*[—–-]\s*Paragraph\s+([A-Z])\b", txt, re.I)
+            if m:
+                qn, ans, label = int(m.group(1)), m.group(2).lower(), m.group(3)
+                p.setdefault("heading_answers", {})[label] = ans
+                blocks.append({"q": qn, "type": "heading_info", "label": label,
+                               "reveal": reveal_from_explanation(ans, txt)})
+                seen.add(qn)
+                continue
+            # 1. iii  (bare roman, infer paragraph from q_to_label or sequential A,B,C...)
+            m = re.match(r"^(\d+)\.\s*([ivx]+)\b", txt, re.I)
+            if m:
+                qn, ans = int(m.group(1)), m.group(2).lower()
+                if qn in q_to_label:
+                    label = q_to_label[qn]
+                elif 1 <= qn <= 14:
+                    from string import ascii_uppercase
+                    label = ascii_uppercase[qn - 1]
+                else:
+                    continue
+                p.setdefault("heading_answers", {})[label] = ans
+                blocks.append({"q": qn, "type": "heading_info", "label": label,
+                               "reveal": reveal_from_explanation(ans, txt)})
+                seen.add(qn)
     if mode == "heading":
         existing_heading_labels = {b.get("label") for b in blocks if b.get("type") == "heading_info"}
         next_q = 1
@@ -334,6 +403,12 @@ def normalize(raw: dict[str, Any], audit: dict[str, Any], confirmations: dict[st
         if mode == "heading":
             out["questions"]["headings"] = p.get("heading_list", [])
             out["questions"]["answers"] = p.get("heading_answers", {})
+            # Ensure all paragraphs with labels have at least an empty heading answer
+            # so generator validation doesn't reject non-heading paragraphs (e.g. F).
+            for para in p.get("paragraphs", []):
+                label = para.get("label", "")
+                if label and label not in out["questions"]["answers"]:
+                    out["questions"]["answers"][label] = ""
         passages.append(out)
     data = {
         "title": "IELTS Reading Practice · extracted from DOCX",

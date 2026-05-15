@@ -175,6 +175,37 @@ def main() -> int:
                 if mark in visible:
                     errors.append(f"Generated HTML visible area contains leakage marker {mark!r}")
 
+    # Regression: heading answer format fixture
+    HEADING_ANSWERS_RAW = ROOT / "fixtures" / "docx_extraction" / "mock_raw_extraction_heading_answer_formats.json"
+    ha_json = td / "ha_candidate.json"
+    ha_html = td / "ha.html"
+    ha_audit_json = td / "ha_audit.json"
+    ha_audit_md = td / "ha_audit.md"
+    r_ha_audit = run([sys.executable, "-B", str(AUDIT), "--raw", str(HEADING_ANSWERS_RAW), "--json-output", str(ha_audit_json), "--md-output", str(ha_audit_md), "--clean-json", str(ha_json), "--html", str(ha_html)])
+    if r_ha_audit.returncode:
+        print(r_ha_audit.stderr); errors.append("heading answer fixture audit failed")
+    else:
+        r_ha_norm = run([sys.executable, "-B", str(NORMALIZE), "--raw", str(HEADING_ANSWERS_RAW), "--audit", str(ha_audit_json), "--output", str(ha_json), "--allow-partial"])
+        if r_ha_norm.returncode:
+            print(r_ha_norm.stderr); errors.append("heading answer fixture normalization failed")
+        else:
+            r_ha_gen = run([sys.executable, "-B", str(GEN), "--data", str(ha_json), "--output", str(ha_html)])
+            if r_ha_gen.returncode:
+                print(r_ha_gen.stderr); errors.append("heading answer fixture HTML generation failed")
+            else:
+                r_ha_val = run([sys.executable, "-B", str(VALIDATE), str(ha_html)])
+                if r_ha_val.returncode:
+                    print(r_ha_val.stderr); errors.append("heading answer fixture validation failed")
+                else:
+                    print("heading answer format fixture: PASS")
+                    data = json.loads(ha_json.read_text())
+                    for p in data["passages"]:
+                        if p["questions"]["type"] == "heading":
+                            if not p["questions"].get("answers"):
+                                errors.append(f"heading answer fixture: passage {p['num']} missing answers")
+                            for b in p["questions"]["blocks"]:
+                                if b["type"] == "heading_info" and not b.get("label"):
+                                    errors.append(f"heading answer fixture: heading_info missing label")
     if errors:
         print("DOCX PIPELINE SMOKE TEST FAILED ❌")
         for e in errors:

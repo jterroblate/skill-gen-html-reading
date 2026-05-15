@@ -1,0 +1,523 @@
+{
+  "input_file": "mock_heading_answer_formats.docx",
+  "extraction_warnings": [],
+  "passages": [
+    {
+      "passage_id": 1,
+      "title": "The Art of Small Talk",
+      "band": "5.5",
+      "genre": "Social Interaction",
+      "linked_topics": "communication, social skills",
+      "heading_list": [],
+      "heading_answers": {},
+      "question_area": [
+        {
+          "role": "text",
+          "text": "The reading passage has five paragraphs, A–F.",
+          "index": 0
+        },
+        {
+          "role": "instruction",
+          "text": "Choose the correct letter, A, B, C or D.",
+          "index": 1
+        },
+        {
+          "role": "question_or_option",
+          "text": "1. According to the writer, casual conversation primarily serves to",
+          "index": 2
+        },
+        {
+          "role": "text",
+          "text": "A) reduce feelings of boredom.",
+          "index": 3
+        },
+        {
+          "role": "text",
+          "text": "B) establish connections.",
+          "index": 4
+        },
+        {
+          "role": "text",
+          "text": "C) eliminate structured introductions.",
+          "index": 5
+        },
+        {
+          "role": "question_or_option",
+          "text": "2. What does the study indicate?",
+          "index": 6
+        },
+        {
+          "role": "text",
+          "text": "A) People derive pleasure from talk.",
+          "index": 7
+        },
+        {
+          "role": "text",
+          "text": "B) Talk occurs with greater regularity.",
+          "index": 8
+        },
+        {
+          "role": "text",
+          "text": "C) People experience discomfort.",
+          "index": 9
+        },
+        {
+          "role": "text",
+          "text": "Do the following statements agree with the passage?",
+          "index": 10
+        },
+        {
+          "role": "text",
+          "text": "Write TRUE if the statement agrees, FALSE if it contradicts, NOT GIVEN if there is no information.",
+          "index": 11
+        },
+        {
+          "role": "question_or_option",
+          "text": "3. The average person spends approximately two hours per week on small talk.",
+          "index": 12
+        },
+        {
+          "role": "text",
+          "text": "Complete the sentences below.",
+          "index": 13
+        },
+        {
+          "role": "text",
+          "text": "Choose NO MORE THAN TWO WORDS from the passage for each answer.",
+          "index": 14
+        },
+        {
+          "role": "summary_text",
+          "text": "People often check whether the other person seems friendly and ________________.",
+          "index": 15
+        },
+        {
+          "role": "summary_text",
+          "text": "Conversation generally avoids ________________ or divisive subject matter.",
+          "index": 16
+        }
+      ],
+      "paragraphs": [
+        {
+          "label": "A",
+          "text": "Small talk serves as a social bridge between being a stranger and becoming an acquaintance.",
+          "index": 200
+        },
+        {
+          "label": "B",
+          "text": "Research shows that the average person spends approximately one hour per week engaging in casual conversation.",
+          "index": 201
+        },
+        {
+          "label": "C",
+          "text": "Skilled conversationalists tend to use open-ended questions to invite more detailed responses.",
+          "index": 202
+        },
+        {
+          "label": "D",
+          "text": "Nearly 40% of respondents reported feeling anxious when required to make small talk at networking events.",
+          "index": 203
+        },
+        {
+          "label": "E",
+          "text": "Small talk conventions vary significantly across different cultures and social contexts.",
+          "index": 204
+        }
+      ],
+      "answer_key": [
+        {
+          "role": "answer_key_entry",
+          "text": "1. B — Paragraphs A and B explain that small talk acts as a social bridge.",
+          "index": 100
+        },
+        {
+          "role": "answer_key_entry",
+          "text": "2. C — Paragraph D reports that nearly 40% of respondents felt anxious.",
+          "index": 101
+        },
+        {
+          "role": "answer_key_entry",
+          "text": "3. FALSE — Paragraph B states the average person spends approximately one hour per week, not two.",
+          "index": 102
+        },
+        {
+          "role": "question_or_option",
+          "text": "4. approachable — Paragraph A lists friendly and approachable as key traits.",
+          "index": 103
+        },
+        {
+          "role": "question_or_option",
+          "text": "5. heavy — Paragraph C mentions avoiding heavy or controversial subjects.",
+          "index": 104
+        }
+      ]
+    },
+    {
+      "passage_id": 2,
+      "title": "How We Read Body Language",
+      "band": "6.0",
+      "genre": "Psychology",
+      "heading_list": [
+        [
+          "i",
+          "Why isolated gestures can mislead interpreters"
+        ],
+        [
+          "ii",
+          "The universal language of facial expression"
+        ],
+        [
+          "iii",
+          "The dominance of visual signals in human interaction"
+        ],
+        [
+          "iv",
+          "What digital platforms remove from communication"
+        ],
+        [
+          "v",
+          "Finding the correct balance of gaze"
+        ],
+        [
+          "vi",
+          "How manual movements support thinking and expression"
+        ],
+        [
+          "vii",
+          "The importance of physical space in conversation"
+        ]
+      ],
+      "heading_answers": {},
+      "question_area": [
+        {
+          "role": "text",
+          "text": "The reading passage has six paragraphs, A–F.",
+          "index": 0
+        },
+        {
+          "role": "instruction",
+          "text": "Choose the correct heading for paragraphs A–E from the list of headings below.",
+          "index": 1
+        },
+        {
+          "role": "text",
+          "text": "List of Headings",
+          "index": 2
+        },
+        {
+          "role": "heading_item",
+          "text": "i. Why isolated gestures can mislead interpreters",
+          "index": 3
+        },
+        {
+          "role": "heading_item",
+          "text": "ii. The universal language of facial expression",
+          "index": 4
+        },
+        {
+          "role": "heading_item",
+          "text": "iii. The dominance of visual signals in human interaction",
+          "index": 5
+        },
+        {
+          "role": "heading_item",
+          "text": "iv. What digital platforms remove from communication",
+          "index": 6
+        },
+        {
+          "role": "heading_item",
+          "text": "v. Finding the correct balance of gaze",
+          "index": 7
+        },
+        {
+          "role": "heading_item",
+          "text": "vi. How manual movements support thinking and expression",
+          "index": 8
+        },
+        {
+          "role": "heading_item",
+          "text": "vii. The importance of physical space in conversation",
+          "index": 9
+        },
+        {
+          "role": "question_or_option",
+          "text": "1. Paragraph A ______",
+          "index": 10
+        },
+        {
+          "role": "question_or_option",
+          "text": "2. Paragraph B ______",
+          "index": 11
+        },
+        {
+          "role": "question_or_option",
+          "text": "3. Paragraph C ______",
+          "index": 12
+        },
+        {
+          "role": "question_or_option",
+          "text": "4. Paragraph D ______",
+          "index": 13
+        },
+        {
+          "role": "question_or_option",
+          "text": "5. Paragraph E ______",
+          "index": 14
+        },
+        {
+          "role": "instruction",
+          "text": "Complete the summary below. Choose NO MORE THAN TWO WORDS from the passage.",
+          "index": 15
+        },
+        {
+          "role": "summary_text",
+          "text": "Experts advise looking for ________________ of non-verbal signals together.",
+          "index": 16
+        }
+      ],
+      "paragraphs": [
+        {
+          "label": "A",
+          "text": "Between 60% and 80% of what we understand comes not from language but from visual signals.",
+          "index": 200
+        },
+        {
+          "label": "B",
+          "text": "Harvard psychologists found the ideal length for eye contact to be between three and five seconds.",
+          "index": 201
+        },
+        {
+          "label": "C",
+          "text": "Paul Ekman identified six basic emotions that are recognised across all cultures.",
+          "index": 202
+        },
+        {
+          "label": "D",
+          "text": "Experts advise looking for clusters of signals rather than interpreting a single gesture.",
+          "index": 203
+        },
+        {
+          "label": "E",
+          "text": "People who gesture more are seen as more enthusiastic and expressive.",
+          "index": 204
+        },
+        {
+          "label": "F",
+          "text": "The same gesture may carry different meanings in different cultural contexts.",
+          "index": 205
+        }
+      ],
+      "answer_key": [
+        {
+          "role": "question_or_option",
+          "text": "1. iii — Paragraph A establishes that between 60% and 80% of understanding comes from visual signals.",
+          "index": 100
+        },
+        {
+          "role": "question_or_option",
+          "text": "2. v — Paragraph B is devoted entirely to eye contact and the ideal duration.",
+          "index": 101
+        },
+        {
+          "role": "question_or_option",
+          "text": "3. ii — Paragraph C discusses Paul Ekman’s six basic emotions.",
+          "index": 102
+        },
+        {
+          "role": "question_or_option",
+          "text": "4. i — Paragraph D explains that a single gesture rarely carries a fixed meaning.",
+          "index": 103
+        },
+        {
+          "role": "question_or_option",
+          "text": "5. vi — Paragraph E describes how hand gestures may actually help us think more clearly.",
+          "index": 104
+        },
+        {
+          "role": "question_or_option",
+          "text": "6. clusters — Paragraph D advises looking for clusters of signals.",
+          "index": 105
+        }
+      ]
+    },
+    {
+      "passage_id": 3,
+      "title": "Is Digital Communication Changing Human Connection",
+      "band": "7.0",
+      "genre": "Technology",
+      "heading_list": [
+        [
+          "i",
+          "An experiment measuring social media's effect on wellbeing"
+        ],
+        [
+          "ii",
+          "Why video calls struggle to build fresh connections"
+        ],
+        [
+          "iii",
+          "Framing the core disagreement"
+        ],
+        [
+          "iv",
+          "What survey data reveal about friendship"
+        ],
+        [
+          "v",
+          "The emotional capacity of written messages"
+        ],
+        [
+          "vi",
+          "A measured final assessment"
+        ]
+      ],
+      "heading_answers": {},
+      "question_area": [
+        {
+          "role": "text",
+          "text": "The reading passage has five paragraphs, A–E.",
+          "index": 0
+        },
+        {
+          "role": "instruction",
+          "text": "Choose the correct heading for paragraphs A–D from the list of headings below.",
+          "index": 1
+        },
+        {
+          "role": "text",
+          "text": "List of Headings",
+          "index": 2
+        },
+        {
+          "role": "heading_item",
+          "text": "i. An experiment measuring social media's effect on wellbeing",
+          "index": 3
+        },
+        {
+          "role": "heading_item",
+          "text": "ii. Why video calls struggle to build fresh connections",
+          "index": 4
+        },
+        {
+          "role": "heading_item",
+          "text": "iii. Framing the core disagreement",
+          "index": 5
+        },
+        {
+          "role": "heading_item",
+          "text": "iv. What survey data reveal about friendship",
+          "index": 6
+        },
+        {
+          "role": "heading_item",
+          "text": "v. The emotional capacity of written messages",
+          "index": 7
+        },
+        {
+          "role": "heading_item",
+          "text": "vi. A measured final assessment",
+          "index": 8
+        },
+        {
+          "role": "question_or_option",
+          "text": "1. Paragraph A ______",
+          "index": 9
+        },
+        {
+          "role": "question_or_option",
+          "text": "2. Paragraph B ______",
+          "index": 10
+        },
+        {
+          "role": "question_or_option",
+          "text": "3. Paragraph C ______",
+          "index": 11
+        },
+        {
+          "role": "question_or_option",
+          "text": "4. Paragraph D ______",
+          "index": 12
+        },
+        {
+          "role": "instruction",
+          "text": "Choose the correct letter, A, B, C or D.",
+          "index": 13
+        },
+        {
+          "role": "question_or_option",
+          "text": "5. What is the author’s overall conclusion?",
+          "index": 14
+        },
+        {
+          "role": "text",
+          "text": "A) Digital communication harms relationships.",
+          "index": 15
+        },
+        {
+          "role": "text",
+          "text": "B) The impact depends on how it is used.",
+          "index": 16
+        },
+        {
+          "role": "text",
+          "text": "C) Technology always improves connections.",
+          "index": 17
+        }
+      ],
+      "paragraphs": [
+        {
+          "label": "A",
+          "text": "The core disagreement is whether digital tools weaken or strengthen relationships.",
+          "index": 200
+        },
+        {
+          "label": "B",
+          "text": "Text-based messaging compensates through features such as emojis and spelling variations.",
+          "index": 201
+        },
+        {
+          "label": "C",
+          "text": "Limiting social media use to ten minutes per day reduced loneliness in some participants.",
+          "index": 202
+        },
+        {
+          "label": "D",
+          "text": "Video calls were effective for maintaining existing relationships but not for forming new ones.",
+          "index": 203
+        },
+        {
+          "label": "E",
+          "text": "Those who use technology as a substitute for real interaction are more likely to experience isolation.",
+          "index": 204
+        }
+      ],
+      "answer_key": [
+        {
+          "role": "question_or_option",
+          "text": "1. iii — Paragraph A presents the two opposing positions.",
+          "index": 100
+        },
+        {
+          "role": "question_or_option",
+          "text": "2. v — Paragraph B focuses on text-based messaging and emotional nuance.",
+          "index": 101
+        },
+        {
+          "role": "question_or_option",
+          "text": "3. i — Paragraph C describes the controlled experiment.",
+          "index": 102
+        },
+        {
+          "role": "question_or_option",
+          "text": "4. ii — Paragraph D discusses Oxford research on video calls.",
+          "index": 103
+        },
+        {
+          "role": "question_or_option",
+          "text": "5. B — Paragraph F states the impact depends on how it is used.",
+          "index": 104
+        }
+      ]
+    }
+  ]
+}

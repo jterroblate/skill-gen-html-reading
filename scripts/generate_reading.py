@@ -97,11 +97,13 @@ def validate_data(data: dict) -> None:
             if not isinstance(answers, dict) or not answers:
                 errors.append(f"{base}.questions.answers is required for heading passages")
             else:
+                heading_targets = {b.get("label") for b in blocks if b.get("type") == "heading_info"}
                 for label in labels:
-                    if label not in answers:
-                        errors.append(f"{base}.questions.answers missing paragraph {label}")
-                    elif heading_keys and answers[label] not in heading_keys:
-                        errors.append(f"{base}.questions.answers.{label} must be a heading key")
+                    if label in heading_targets:
+                        if label not in answers:
+                            errors.append(f"{base}.questions.answers missing paragraph {label}")
+                        elif heading_keys and answers[label] not in heading_keys:
+                            errors.append(f"{base}.questions.answers.{label} must be a heading key")
         for j, blk in enumerate(blocks, 1):
             b = f"{base}.questions.blocks[{j}]"
             if not isinstance(blk, dict):
@@ -402,11 +404,14 @@ def generate(data, output_path):
             headings_data = qdata.get('headings', [])
             ans_map = qdata.get('answers', {})
             heading_text = dict(normalize_heading(x) for x in headings_data)
+            heading_target_labels = {b.get("label") for b in qdata.get("blocks", []) if b.get("type") == "heading_info"}
             for i, para in enumerate(paras, 1):
-                label = para['label']; ans = ans_map.get(label, ''); q_num = i
-                reveal_text = f'✅ {ans} — {heading_text.get(ans, "")}'.strip()
-                pc_lines.append(build_heading_slot(p_num, label, q_num, ans, heading_text.get(ans, "")))
-                pc_lines.append(build_reveal(q_num, reveal_text))
+                label = para['label']
+                if label in heading_target_labels:
+                    ans = ans_map.get(label, ''); q_num = i
+                    reveal_text = f'✅ {ans} — {heading_text.get(ans, "")}'.strip()
+                    pc_lines.append(build_heading_slot(p_num, label, q_num, ans, heading_text.get(ans, "")))
+                    pc_lines.append(build_reveal(q_num, reveal_text))
                 pc_lines.append(build_para(label, para['text']))
             non_heading_blocks = [b for b in blocks if b.get('type') != 'heading_info']
             q_end = max_question_number(non_heading_blocks, minimum=len(paras))
