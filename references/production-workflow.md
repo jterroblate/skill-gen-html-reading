@@ -2,11 +2,9 @@
 
 ## Scope
 
-This skill currently stabilizes the **JSON → standalone HTML** layer.
-
-It does not parse PDF/DOCX/OCR/screenshots, does not extract questions from raw
-text, and does not run a complete agent-mediated LLM generation pipeline. Prepare
-validated JSON first, then use this skill to render and QA the interactive HTML.
+This skill now supports a full **teacher DOCX → interactive HTML** pipeline.
+Module A (DOCX → clean JSON) and Module B (JSON → HTML) are both stable.
+Audit-first design preserves source evidence and flags conflicts before clean JSON generation.
 
 ## One-Command Smoke Gate
 
@@ -14,10 +12,12 @@ Before shipping changes to the skill, run:
 
 ```bash
 python3 -B scripts/smoke_test.py
+python3 -B scripts/smoke_test_docx_pipeline.py
 ```
 
-The smoke test:
+Both must PASS.
 
+The `smoke_test.py` (Module B):
 1. Confirms `schema/reading_data.schema.json` is valid JSON.
 2. Runs built-in schema/data validation on good fixtures.
 3. Generates temporary HTML for each good fixture.
@@ -25,101 +25,80 @@ The smoke test:
 5. Confirms `fixtures/bad_missing_required.json` fails schema/data validation.
 6. Writes only to a system temp directory.
 
-Expected final line:
-
-```text
-SMOKE TEST PASSED ✅
-```
-
-Expected validator warning:
-
-```text
-WARNING: current output is not a strict student version because answers are embedded in HTML source/data attributes.
-```
-
-That warning is intentional for the current phase.
+The `smoke_test_docx_pipeline.py` (Module A):
+1. Tests clean mock raw extraction → audit → normalize → generate → validate.
+2. Tests U03-style DOCX (Reading Passage N — Title, Level: Band meta, no END separators) through extraction.
+3. Tests conflict raw extraction (detects answer_key_conflict and summary_answer_mismatch).
+4. Tests question patterns fixture (MCQ leakage, TFNG inline, summary multi-blank, matching, heading, reveal fallback).
 
 ## Production Steps
 
-### Step 1: Prepare JSON
-
-Create JSON matching `schema/reading_data.schema.json`. Use checked-in fixtures as
-examples:
-
-- `fixtures/minimal_1_passage.json`
-- `fixtures/escaping_edge_cases.json`
-- `fixtures/full_5_passage_all_types.json`
-
-Supported passage counts are **1, 3, or 5**. Each passage requires:
-
-- `num`
-- `title`
-- `paras`
-- `questions`
-
-Each paragraph requires:
-
-- `label`
-- `text`
-
-Each question block must use one supported type:
-
-- `mcq`
-- `tfng` / `true_false`
-- `ynng` / `yes_no`
-- `match`
-- `fill`
-- `summary`
-- `heading_info` for heading passages
-
-Heading passages additionally require:
-
-- `questions.headings`
-- `questions.answers`
-
-### Step 2: Generate HTML
+### Step 1: Run DOCX through the pipeline
 
 ```bash
-python3 -B scripts/generate_reading.py \
-  --data /path/to/reading_data.json \
-  --output /path/to/reading_practice.html
+python3 -B scripts/build_from_docx.py \
+  --docx /path/to/teacher_version.docx \
+  --out-dir /path/to/audit_output \
+  --clean-json /path/to/clean_candidate.json \
+  --html-output /path/to/practice.html \
+  --allow-partial
 ```
 
-Generation fails before writing if required fields are missing, question types are
-unsupported, answer/options are empty, or passage count is not 1/3/5.
+If the source is known to have answer missing or conflicts, prepare a `confirmed_answers.json` first and pass `--confirmed-answers /path/to/confirmations.json`.
 
-### Step 3: Validate HTML
+### Step 2: Check the audit report
+
+Open `audit_output/source_audit.md`.
+
+- **FAIL** with blocking passage_detection_failure → inspect title/meta format, may need extraction pattern update.
+- **PASS** → proceed.
+- **PARTIAL PASS** → review major issues; resolve with confirmations or skip if acceptable (for development).
+
+### Step 3: Verify clean JSON
+
+The `generate_reading.py` script performs schema validation before writing HTML.
+If it succeeds, the JSON is structurally valid.
+
+### Step 4: Validate generated HTML
 
 ```bash
-python3 -B scripts/validate_reading.py /path/to/reading_practice.html
+python3 -B scripts/validate_reading.py /path/to/practice.html
 ```
 
-Validator errors block delivery. Validator warnings must be understood and either
-accepted for this phase or resolved in a later phase.
+Errors block delivery. Warnings must be understood (expected: answer-in-source warning).
 
-### Step 4: Manual Review
+### Step 5: Browser spot check
 
-Open the generated HTML only when the user has explicitly authorized browser use.
-Then manually test:
+Only perform when the user has explicitly authorized browser use.
 
+Test:
 1. Passage tab switching
-2. MCQ selection
-3. TFNG/YNNG selection
+2. MCQ selection and submit feedback
+3. TFNG/YNNG selection and submit feedback
 4. Matching select
 5. Fill and summary inputs
 6. Heading drag/drop and click-heading-then-click-slot fallback
-7. Heading answer boxes render in `.passage-col` before each target paragraph, not in `.questions-col`
-8. Heading `.questions-col` contains only the title, brief instruction, and List of Headings / heading pool; it must not repeat `Paragraph A/B/C` answer-list rows
-9. Submit scoring marks correct/wrong without exposing correct headings
-9. Reveal buttons write full correct headings into the passage-side answer boxes
-10. Reset current passage clears heading slots, used pool state, feedback, reveals, and score
-10. Browser-side PDF score report, if network/CDN is available
+7. Heading answer boxes render in `.passage-col` only, not `.questions-col`
+8. `.questions-col` contains only instruction, heading pool; no legacy Paragraph A/B/C answer list
+9. Submit scoring marks correct/wrong without exposing answers
+10. Reveal buttons write correct answers into slots
+11. Reset clears all state for current passage
+12. 390px viewport with no horizontal overflow
+13. Console errors = 0 (ignore favicon 404)
+
+### Step 6: Version output
+
+Do not overwrite previous outputs. Save with version suffix:
+
+- `reading_unit_v1_docx_pipeline.json`
+- `reading_unit_刷题_v1_docx_pipeline.html`
+
+Update acceptance report if applicable.
 
 ## Validator Errors vs Warnings
 
-Errors mean the output is structurally unsafe or incomplete and should not ship.
+**Errors** mean the output is structurally unsafe or incomplete and should not ship.
 Examples:
-
 - script/body/html tag mismatch
 - duplicate closing tags
 - div imbalance
@@ -127,30 +106,43 @@ Examples:
 - empty passage/question/reveal text
 - missing MCQ options or answers
 - heading pool without passage-side heading slots
-- heading slots missing `data-para`, `data-q`, or full `data-answer-text`
-- heading slot count not matching target paragraph count
-- heading slots rendered in the questions column
+- heading slots rendered in questions column
+- visible answer leakage markers in MCQ options or TFNG statements
+- internal template phrases in reveal text
 
-Warnings currently include known product limitations. The main warning is answer
-embedding in HTML source/data attributes; this means the output is not a strict
-secure student version.
+**Warnings** currently include known product limitations:
+- `current output is not a strict student version because answers are embedded in HTML source/data attributes.`
+
+## Human Override File
+
+When the teacher DOCX has an unusual answer format or the normalizer extracts an incorrect answer, create a `confirmed_answers.json`:
+
+```json
+{
+  "P1_Q8": {
+    "answer": "routine",
+    "confirmed_by": "JT",
+    "note": "Matches passage evidence."
+  }
+}
+```
+
+Pass it to the pipeline:
+
+```bash
+python3 -B scripts/build_from_docx.py \
+  --docx teacher.docx \
+  --out-dir audit_dir \
+  --confirmed-answers confirmed_answers.json \
+  --clean-json clean.json \
+  --html-output practice.html
+```
 
 ## Known Limitations
 
-- No raw material ingestion: PDF/DOCX/OCR/screenshots/plain text are out of scope.
-- No LLM task generation, answer evidence extraction, or agent result merge.
-- No strict student/teacher split.
-- No Word output.
-- PDF support is only a browser-side score report using CDN libraries.
-- Browser console/mobile layout gates are not automated yet.
-
-## Later Phases
-
-Do these after the JSON → HTML base is stable:
-
-1. Agent/LLM task generation from raw text.
-2. Agent result merge and semantic QA.
-3. Teacher version with answers, explanations, evidence, and highlights.
-4. Strict student version that does not expose answers in source.
-5. PDF/Word export for student and teacher materials.
-6. Browser automation smoke for console errors and mobile layout.
+- Answers are embedded in HTML `data-ans` attributes. Not a strict secure student version.
+- DOCX extraction is tuned for teacher-version IELTS Reading documents. General Word layouts may not parse.
+- No PDF/OCR/screenshot input.
+- No automatic question generation from unstructured prose.
+- Browser automation QA (console errors, mobile layout) is not automated.
+- Summary multi-blank blocks must use consolidated pair format in clean JSON.

@@ -3,61 +3,64 @@ name: skill-gen-html-reading
 description: >
   Generate interactive IELTS reading practice HTML from structured JSON data with
   heading-matching drag-and-drop, MCQ, TFNG/YNNG, matching select, fill, summary
-  completion, submit/reveal/reset/scoring, and smoke-testable fixtures. Trigger
-  when user requests: reading practice HTML, 阅读刷题HTML, reading player, heading
-  matching drag-and-drop, or an IELTS reading practice interface.
+  completion, submit/reveal/reset/scoring, source-audit, DOCX-to-JSON extraction,
+  and smoke-testable regression fixtures. Trigger when user requests: reading
+  practice HTML, 阅读刷题HTML, reading player, heading matching drag-and-drop,
+  or an IELTS reading practice interface.
 ---
 
-# IELTS Reading Player Generator
+# IELTS Reading DOCX/JSON to Interactive HTML Generator — v1.0.0-candidate
 
 ## Current Scope
 
-This skill has two modules:
+This skill has three stable modules:
 
-- **Module A (pilot): teacher DOCX / source draft → raw extraction → source audit → clean structured JSON candidate.**
+- **Module A (stable): teacher DOCX → raw extraction → source audit → clean structured JSON candidate.**
 - **Module B (stable): structured JSON → standalone IELTS Reading interactive HTML.**
+- **Module C (stable): schema validation, source audit, regression smoke tests, visible answer leakage checks, heading interaction QA.**
 
-Module A is intentionally audit-first. It preserves source traces, warnings, and
-confidence instead of silently fixing source conflicts. It is currently tuned for
-IELTS Reading teacher-version documents with clear passage/question/answer-key
-structure; it is **not** a general Word layout parser.
+Modules are designed for a **teacher-version source → student-practice HTML** workflow.
+Module A is intentionally audit-first: it preserves source traces, warnings, and
+confidence instead of silently fixing source conflicts.
 
-It does **not** currently support:
+## Supported Question Types
+
+- MCQ (multiple choice, A/B/C/D)
+- TFNG (True / False / Not Given)
+- YNNG (Yes / No / Not Given)
+- Matching select (paragraph/information matching)
+- Fill (single blank inline)
+- Summary (multi-blank completion paragraph)
+- Heading matching (drag-and-drop inline compact dropboxes)
+
+## What It Does Not Support
 
 - PDF input parsing
 - OCR or screenshot understanding
-- arbitrary Word layout reconstruction
-- pure-text automatic question generation from unstructured prose
-- strict student-version security against viewing answers in HTML source
-
-Do not present this skill as a fully general raw-material → reading-pack
-generator. For production, use Module A audit output first, then feed confirmed
-clean JSON into Module B.
+- Arbitrary Word layout reconstruction (only teacher DOCX with clear passage/question/answer-key structure)
+- Pure-text automatic question generation from unstructured prose
+- Strict student-version security against viewing answers in HTML source
+- LLM or agent-mediated question extraction
 
 ## Output
 
 The generator produces a single standalone HTML file with:
 
-- Dynamic passage tabs; supported passage counts: **1, 3, or 5**
-- Left column: passage text
-- Right column: questions and heading pool
-- Heading matching: passage-side answer drop boxes before each target paragraph; drag/drop plus click-heading-then-click-slot support
-- Question types: MCQ, TFNG, YNNG, matching select, fill, summary completion
+- Dynamic passage tabs; supported counts: **1, 3, or 5**
+- Left column: passage text with inline heading dropboxes
+- Right column: questions, heading pool, and instructions
+- Compact inline heading matching slots (drag/drop plus click-heading-then-click-slot)
 - Submit → red/green feedback without revealing correct answers
 - Reveal buttons after submit; heading reveal writes the full correct heading into the passage-side answer box
-- Reset current passage, including heading slot values, used heading state, feedback, score, and reveals
-- Score display
-- Browser-side score report PDF via jsPDF/html2canvas CDN
+- Reset current passage clears all state
+- Score display and browser-side score report PDF via jsPDF/html2canvas CDN
 
-Important limitation: answers are embedded in HTML `data-ans` attributes and hidden
-reveal blocks. The output is fine for practice UX but is **not a strict secure
-student version**.
+**Important limitation**: answers are embedded in HTML `data-ans` attributes and hidden
+reveal blocks. The output is fine for practice UX but is **not a strict secure student version**.
 
 ## Quick Start
 
-### Module B: JSON → HTML
-
-From this skill directory:
+### Module B only: JSON → HTML
 
 ```bash
 python3 -B scripts/generate_reading.py \
@@ -71,48 +74,30 @@ Validate generated HTML:
 python3 -B scripts/validate_reading.py /tmp/reading_minimal.html
 ```
 
-Run the full non-destructive smoke suite:
+Run smoke tests:
 
 ```bash
 python3 -B scripts/smoke_test.py
+python3 -B scripts/smoke_test_docx_pipeline.py
 ```
 
-Smoke tests generate temporary HTML under a system temp directory and do not write
-outputs into the skill directory.
-
-### Module A: DOCX → clean JSON candidate
+### Full pipeline: DOCX → HTML
 
 ```bash
 python3 -B scripts/build_from_docx.py \
   --docx /path/to/teacher.docx \
   --out-dir /path/to/docx_to_json_audit \
+  --clean-json /path/to/clean_candidate.json \
+  --html-output /path/to/reading_practice.html \
   --allow-partial
-```
-
-Typical outputs:
-
-- `raw_docx_extraction.json`
-- `source_audit.json`
-- `source_audit.md`
-- `clean_reading_data_candidate.json`
-- `extraction_warnings.json`
-
-Run Module A smoke tests:
-
-```bash
-python3 -B scripts/smoke_test_docx_pipeline.py
 ```
 
 ## Input Data Contract
 
-The formal schema is documented in:
+Formal schema: `schema/reading_data.schema.json`
 
-- `schema/reading_data.schema.json`
-
-The runtime generator also performs built-in schema/data validation before writing
-HTML. Good fixtures are in `fixtures/`; the bad fixture must fail validation.
-
-Top-level structure:
+The generator also performs built-in schema/data validation before writing HTML.
+See fixtures in `fixtures/` for examples.
 
 ```json
 {
@@ -138,9 +123,20 @@ Top-level structure:
 }
 ```
 
-Supported passage counts: **1, 3, or 5**.
+## CLI Entry Points
 
-## Question Blocks
+| Step | Command | Key args |
+|---|---|---|
+| DOCX → full pipeline | `scripts/build_from_docx.py` | `--docx`, `--out-dir`, `--clean-json`, `--html-output`, `--confirmed-answers`, `--allow-partial` |
+| DOCX → raw extraction | `scripts/extract_docx_to_reading_json.py` | `--docx`, `--output` |
+| Raw → audit | `scripts/audit_reading_source.py` | `--raw`, `--json-output`, `--md-output`, `--clean-json`, `--html` |
+| Raw + audit + confirm → clean JSON | `scripts/normalize_reading_json.py` | `--raw`, `--audit`, `--output`, `--confirmed-answers`, `--allow-partial` |
+| Clean JSON → HTML | `scripts/generate_reading.py` | `--data`, `--output`, `--title` |
+| HTML validation | `scripts/validate_reading.py` | HTML file path |
+| Smoke tests | `scripts/smoke_test.py` | none |
+| DOCX pipeline smoke test | `scripts/smoke_test_docx_pipeline.py` | none |
+
+## Question Block Reference
 
 ### MCQ
 
@@ -175,10 +171,6 @@ Supported passage counts: **1, 3, or 5**.
 
 ### Heading Matching
 
-For heading passages, set `questions.type` to `heading`, provide `headings`,
-paragraph-label `answers`, and optional `heading_info` blocks for visible question
-labels/reveals.
-
 ```json
 {
   "type": "heading",
@@ -190,19 +182,20 @@ labels/reveals.
 }
 ```
 
-## Validation and Warnings
+## Validation
 
 `validate_reading.py` checks:
 
-- html/body/script open/close tag counts
-- duplicate trailing closing tags
-- div balance
-- required DOM classes and interaction functions
-- passage tab/panel counts
-- non-empty passage text, question text, and reveal text
-- MCQ options and `data-ans`
-- fill/summary answers
-- heading pool, heading item, heading slot, and drag/drop functions
+- HTML structure (tag counts, div balance, closing tags)
+- Required DOM classes and interaction functions
+- Passage/tab/panel consistency
+- Non-empty text, questions, reveals
+- Complete MCQ options and `data-ans`
+- Fill/summary answers
+- Heading pool, slot count/position, interaction functions
+- Visible answer leakage fails: MCQ options, TFNG/YNNG statements must not contain answer markers
+- Reveal content must not contain internal template phrases (extracted from teacher answer key, marked option, source trace, etc.)
+- Summary diagnostic: fill-input missing `data-ans`, duplicate question numbers
 
 Expected warning:
 
@@ -210,17 +203,67 @@ Expected warning:
 WARNING: current output is not a strict student version because answers are embedded in HTML source/data attributes.
 ```
 
-This warning is intentional until a later strict student/teacher split exists.
+This warning is intentional until a strict student/teacher split exists.
+
+## Source Audit Rules
+
+See `references/source-audit-rules.md` for full detail.
+
+- `passage_detection_failure`: 0 or 1 passage extracted from a full-unit source → blocking or major
+- `answer_key_conflict`: embedded answer in question area conflicts with Answer Key
+- `summary_answer_mismatch`: blank count does not match answer line
+- `missing_question`: answer key contains a question number absent from question area
+- `heading_structure_issue`: heading pool < target paragraphs; label references missing
+- `paragraph_split_issue`: multiple labels in one DOCX paragraph; label not extracted
+
+## When Human Confirmation Is Required
+
+- Source audit verdict = FAIL (blocking issues)
+- Major answer conflicts (embedded answer ≠ answer key)
+- Missing questions from source
+- Summary blank/answer count mismatch
+- Passage count significantly off
+- Any blocking issue
+
+A `confirmed_answers.json` file can override source-extracted answers:
+
+```json
+{
+  "P1_Q8": {
+    "answer": "routine",
+    "confirmed_by": "JT",
+    "note": "Matches passage and blank context."
+  }
+}
+```
+
+## When Generated HTML Is Ready for Delivery
+
+1. Source audit verdict: PASS (or PARTIAL PASS with confirmed resolutions)
+2. No blocking issues unresolved
+3. No major unresolved issues
+4. Clean JSON passes schema/runtime validation
+5. Generated HTML passes `validate_reading.py`
+6. Both smoke tests pass
+7. Browser spot check passes (tab switching, MCQ/TFNG interaction, heading drag/click/check/reveal/reset, 390px no overflow)
 
 ## Fixtures
 
-- `fixtures/minimal_1_passage.json` — minimal valid 1-passage fixture
-- `fixtures/escaping_edge_cases.json` — 3-passage fixture with `<`, `>`, `&`, quotes, slash, long dash
-- `fixtures/full_5_passage_all_types.json` — 5-passage fixture covering supported types
-- `fixtures/bad_missing_required.json` — invalid fixture that must fail schema/data validation
+| Fixture | Purpose |
+|---|---|
+| `fixtures/minimal_1_passage.json` | Minimal valid 1-passage fixture |
+| `fixtures/heading_matching_inline_dropboxes.json` | Single heading passage regression |
+| `fixtures/escaping_edge_cases.json` | 3-passage fixture with special characters |
+| `fixtures/full_5_passage_all_types.json` | 5-passage fixture covering all types including multi-blank summary |
+| `fixtures/bad_missing_required.json` | Invalid fixture that must fail schema validation |
+| `fixtures/docx_extraction/mock_raw_extraction_clean.json` | Clean DOCX extraction mock for pipeline smoke |
+| `fixtures/docx_extraction/mock_raw_extraction_question_patterns.json` | MCQ leakage / TFNG inline / summary multi-blank / matching / heading / reveal regression |
+| `fixtures/source_audit/mock_raw_extraction_conflict.json` | Fixture with intentional answer key conflicts |
 
-## Related
+## References
 
-- `references/production-workflow.md`
-- `references/player-architecture.md`
-- `schema/reading_data.schema.json`
+- `references/docx-to-json-pipeline.md` — Module A architecture and data layers
+- `references/source-audit-rules.md` — Audit verdict and rule definitions
+- `references/production-workflow.md` — Full production pipeline steps
+- `references/player-architecture.md` — Module B HTML player structure
+- `schema/reading_data.schema.json` — Formal input data schema

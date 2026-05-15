@@ -5,3 +5,10 @@ outputs/
 tmp/
 reports/
 *.log
+.vscode/
+*.swp
+*.swo
+*~
+dist/
+node_modules/
+*.egg-info/

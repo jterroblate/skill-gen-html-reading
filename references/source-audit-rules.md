@@ -10,6 +10,24 @@ The audit layer detects source risk before a DOCX is normalized into clean HTML-
 
 ## Required Rules
 
+### passage_detection_failure
+
+Trigger when:
+
+- 0 passages extracted from a document that appears to be a full IELTS reading set
+- < 3 passages extracted and source has question markers indicating a full unit
+- Passage count is suspiciously low relative to question marker count
+
+Heuristics:
+- Count `Questions 1–N` markers and question-like numbered lines
+- Compare with extracted passage count
+- Recommend inspecting title pattern, meta line pattern, separator availability
+
+Behavior:
+- For 0 passages: **blocking**
+- For < 3 passages on full-unit source: **major**
+- Do not silently PASS
+
 ### summary_answer_mismatch
 
 Trigger when:
@@ -30,7 +48,7 @@ Heuristics:
 Trigger when:
 
 - Question-area embedded answer, e.g. `[FALSE]`, conflicts with answer-key entry, e.g. `9. TRUE`.
-- MCQ option marked `[ANSWER]` conflicts with answer key.
+- MCQ option marked with `[ANSWER]`, bold red run, or `✓`/`✔` conflicts with answer key.
 
 Behavior:
 
@@ -70,16 +88,35 @@ Trigger when:
 - Heading answer labels reference absent passage labels.
 - Heading questions render as select/legacy list in clean JSON candidate.
 
-### generator_display_issue
+### visible_answer_leakage
 
 Trigger when:
 
-- A problem belongs to JSON→HTML rendering rather than DOCX source quality, e.g. question header range based on block count rather than max question number.
+- MCQ option text contains `✓`, `✔`, `√`, `[correct]`, `(correct)`
+- TFNG/YNNG question statement contains `[TRUE]`, `[FALSE]`, `[NOT GIVEN]`, `[YES]`, `[NO]`
+- Fill/summary answer is present in visible question text
 
 Behavior:
 
-- Classify separately; do not treat as source issue.
-- Fix in Module B only if needed, with existing smoke tests.
+- Mark as major if leakage would expose answers before submission.
+- Normalizer should strip these from visible text and record answer separately.
+- If not strippable, require human confirmation.
+
+### internal_template_phrase_leakage
+
+Trigger when:
+
+- Reveal text in generated HTML contains:
+  - `extracted from teacher answer key`
+  - `marked option`
+  - `source trace`
+  - `raw extraction`
+  - `normalizer fallback`
+
+Behavior:
+
+- The `validate_reading.py` detects these as errors in generated HTML.
+- Normalizer must use either real teacher explanations or neutral fallback text.
 
 ## Report Tables
 
@@ -87,7 +124,7 @@ Markdown reports must include:
 
 1. Overall Verdict
 2. Input Files
-3. Extraction Summary
+3. Extraction Summary (passage count, paragraph count, question count estimate, type distribution, answer count estimate, issue count)
 4. Blocking Issues
 5. Major Issues
 6. Minor Issues

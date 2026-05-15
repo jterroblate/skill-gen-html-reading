@@ -137,9 +137,25 @@ and enables reveal buttons.
 - non-empty paragraphs/questions/reveals
 - required options/answers by type
 - heading pool/slot/item structure
+- visible answer leakage (MCQ options, TFNG statements)
+- internal template phrases in reveal text
 
 It also emits the current answer-leakage warning because answers are embedded in
 source/data attributes.
+
+## Compact Heading Dropbox Style (v2+)
+
+Starting from v2, heading slots use a compact inline layout:
+
+- `.heading-drop-row` is a flex row (label + drop slot on one line)
+- Slot `min-height: 30px` (previously 42px)
+- Row margin: `8px 0 4px`, padding: `6px 8px`
+- Slot padding: `5px 8px`
+- Label: `Q1 / Paragraph A` (previously `Q1 · Paragraph A heading`)
+- Placeholder: `拖入 heading / Drop heading` (previously longer text)
+- Reveal prefix: `Correct: ` (previously `正确答案：`)
+- At 430px and below, the flex direction adapts for narrow viewports
+- Validator checks `.passage-col .heading-slot` and `.questions-col .heading-slot == 0`
 
 ## Known Product Limitation
 
