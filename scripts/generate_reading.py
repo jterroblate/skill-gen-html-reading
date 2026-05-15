@@ -16,7 +16,7 @@ def h(value: Any) -> str:
 def a(value: Any) -> str:
     return html.escape(str(value), quote=True)
 
-LEAK_MARK_RE = re.compile(r"\s*(?:[✓✔√]|\[(?:correct|answer)\]|\((?:correct|answer)\)|\bCorrect(?:\s+answer)?\b|\bAnswer:\s*)\s*", re.I)
+LEAK_MARK_RE = re.compile(r"\s*(?:[✓✔√]|\[(?:correct|answer)\]|\((?:correct|answer)\))\s*", re.I)
 
 def clean_student_visible(value: Any) -> str:
     return re.sub(r"\s+", " ", LEAK_MARK_RE.sub(" ", str(value))).strip()

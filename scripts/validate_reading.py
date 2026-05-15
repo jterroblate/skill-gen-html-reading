@@ -245,7 +245,7 @@ def validate(path: str) -> bool:
         low = txt.lower()
         hit = next((p for p in internal_phrases if p in low), None)
         if hit:
-            warnings.append(f"Reveal {i} contains internal/template phrase {hit!r}")
+            errors.append(f"Reveal {i} contains internal/template phrase {hit!r}; these must not appear in student-visible HTML")
 
     # 6. Answer leakage policy warning.
     if "data-ans=" in html or "answer-reveal" in html:

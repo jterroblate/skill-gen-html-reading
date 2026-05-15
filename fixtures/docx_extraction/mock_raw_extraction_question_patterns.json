@@ -1,0 +1,113 @@
+{
+  "schema_version": "reading_docx_raw_v1",
+  "input_file": "fixture/mock_question_patterns.docx",
+  "generated_at": "2026-05-15T00:00:00Z",
+  "paragraphs": [],
+  "passages": [
+    {
+      "passage_id": 1,
+      "title": "MCQ and Leakage Patterns",
+      "band": "6.0",
+      "genre": "Fixture",
+      "linked_topics": "testing patterns",
+      "source_locations": [1, 2],
+      "source_end": 20,
+      "paragraphs": [
+        {"label": "A", "text": "A simple paragraph for testing MCQs and TFNG items with various answer marker formats.", "source_index": 3}
+      ],
+      "question_area": [
+        {"index": 4, "text": "Choose the correct letter, A, B, C or D.", "role": "instruction"},
+        {"index": 5, "text": "1. MCQ with checkmark ✓ on correct option.", "role": "question_or_option"},
+        {"index": 6, "text": "A) First distractor", "role": "option"},
+        {"index": 7, "text": "B) Second option with ✓", "role": "option", "runs": [{"text": "B) Second option with ✓", "bold": true, "italic": false, "color": "CC0000"}]},
+        {"index": 8, "text": "C) Third distractor", "role": "option"},
+        {"index": 9, "text": "D) Fourth distractor", "role": "option"},
+        {"index": 10, "text": "Paragraph B: Second option is correct because... full explanation here for the test.", "role": "answer_key_entry", "runs": [{"text": "Paragraph B: Second option is correct because... full explanation here for the test.", "bold": false, "italic": true, "color": "777777"}]},
+        {"index": 11, "text": "2. MCQ with [correct] marker.", "role": "question_or_option"},
+        {"index": 12, "text": "A) Wrong choice", "role": "option"},
+        {"index": 13, "text": "B) Another wrong choice", "role": "option"},
+        {"index": 14, "text": "C) Correct answer [correct]", "role": "option", "runs": [{"text": "C) Correct answer [correct]", "bold": true, "italic": false, "color": "CC0000"}]},
+        {"index": 15, "text": "D) Last wrong choice", "role": "option"},
+        {"index": 16, "text": "3. TFNG inline [TRUE] in statement.", "role": "question_or_option"},
+        {"index": 17, "text": "3. The passage states that the paragraph is simple. [TRUE]", "role": "answer_key_entry", "runs": [{"text": "3. The passage states that the paragraph is simple. [TRUE]", "bold": false, "italic": true, "color": "777777"}]},
+        {"index": 18, "text": "4. TFNG inline [FALSE] in statement.", "role": "question_or_option"},
+        {"index": 19, "text": "4. The paragraph contains zero sentences. [FALSE]", "role": "answer_key_entry", "runs": [{"text": "4. The paragraph contains zero sentences. [FALSE]", "bold": false, "italic": true, "color": "777777"}]},
+        {"index": 20, "text": "5. TFNG inline [NOT GIVEN] in statement.", "role": "question_or_option"},
+        {"index": 21, "text": "5. The paragraph mentions a specific date. [NOT GIVEN]", "role": "answer_key_entry", "runs": [{"text": "5. The paragraph mentions a specific date. [NOT GIVEN]", "bold": false, "italic": true, "color": "777777"}]},
+        {"index": 22, "text": "Do the statements agree? Write TRUE, FALSE, or NOT GIVEN.", "role": "instruction"},
+        {"index": 23, "text": "6. The author claims the test is important. [TRUE]", "role": "question_or_option"},
+        {"index": 24, "text": "2. B  Paragraph B explains why option B is correct. 3. C  Paragraph C confirms option C.", "role": "answer_key_entry"}
+      ],
+      "answer_key": [],
+      "heading_list": [],
+      "heading_answers": {},
+      "summary_answer_lines": []
+    },
+    {
+      "passage_id": 2,
+      "title": "Summary Multi-Blank and Matching Patterns",
+      "band": "6.5",
+      "genre": "Fixture",
+      "linked_topics": "",
+      "source_locations": [21, 22],
+      "source_end": 40,
+      "paragraphs": [
+        {"label": "A", "text": "The study tracked sample groups and measured outcomes across five behavioral categories.", "source_index": 21},
+        {"label": "B", "text": "Researchers found that early intervention correlated with higher retention rates.", "source_index": 22},
+        {"label": "C", "text": "Follow-up surveys confirmed the pattern persisted over multiple years.", "source_index": 23}
+      ],
+      "question_area": [
+        {"index": 24, "text": "Complete the summary. Choose NO MORE THAN TWO WORDS.", "role": "instruction"},
+        {"index": 25, "text": "The study used (10) ______ groups and measured (11) ______ across categories. Early (12) ______ correlated with higher retention. The pattern (13) ______ over multiple years.", "role": "summary_text"},
+        {"index": 26, "text": "Answers: (10) sample (11) outcomes (12) intervention (13) persisted", "role": "answer_line"},
+        {"index": 27, "text": "10. sample 11. outcomes 12. intervention 13. persisted", "role": "answer_key_entry"},
+        {"index": 28, "text": "Which paragraph contains the following information? NB You may use any letter more than once.", "role": "instruction"},
+        {"index": 29, "text": "14. A description of the groups used in the study A", "role": "question_or_option"},
+        {"index": 30, "text": "Paragraph A: 'The study tracked sample groups'", "role": "answer_key_entry", "runs": [{"text": "Paragraph A: 'The study tracked sample groups'", "bold": false, "italic": true, "color": "777777"}]},
+        {"index": 31, "text": "15. A finding regarding early intervention B", "role": "question_or_option"},
+        {"index": 32, "text": "Paragraph B: 'researchers found that early intervention'", "role": "answer_key_entry", "runs": [{"text": "Paragraph B: 'researchers found that early intervention'", "bold": false, "italic": true, "color": "777777"}]},
+        {"index": 33, "text": "16. Evidence that the pattern was not temporary C", "role": "question_or_option"},
+        {"index": 34, "text": "Paragraph C: 'the pattern persisted over multiple years'", "role": "answer_key_entry", "runs": [{"text": "Paragraph C: 'the pattern persisted over multiple years'", "bold": false, "italic": true, "color": "777777"}]}
+      ],
+      "answer_key": [],
+      "heading_list": [],
+      "heading_answers": {},
+      "summary_answer_lines": []
+    },
+    {
+      "passage_id": 3,
+      "title": "Heading Matching Without Separators",
+      "band": "7.0",
+      "genre": "Fixture",
+      "linked_topics": "",
+      "source_locations": [35, 36],
+      "source_end": 50,
+      "paragraphs": [
+        {"label": "A", "text": "The first section introduces the core idea of structured observation.", "source_index": 35},
+        {"label": "B", "text": "The second part elaborates on the methodology used in the study.", "source_index": 36},
+        {"label": "C", "text": "The third section discusses potential limitations of the approach.", "source_index": 37}
+      ],
+      "question_area": [
+        {"index": 38, "text": "Choose the correct heading for each paragraph.", "role": "instruction"},
+        {"index": 39, "text": "List of Headings", "role": "text"},
+        {"index": 40, "text": "i. The initial framework for observation", "role": "heading_item"},
+        {"index": 41, "text": "ii. How the study was conducted", "role": "heading_item"},
+        {"index": 42, "text": "iii. Weaknesses in the observational design", "role": "heading_item"},
+        {"index": 43, "text": "iv. An unrelated example for distractor", "role": "heading_item"},
+        {"index": 44, "text": "v. A summary of key recommendations", "role": "heading_item"},
+        {"index": 45, "text": "1. Paragraph A i", "role": "question_or_option"},
+        {"index": 46, "text": "Paragraph A: 'introduces the core idea of structured observation' — heading i.", "role": "answer_key_entry", "runs": [{"text": "Paragraph A: 'introduces the core idea of structured observation' — heading i.", "bold": false, "italic": true, "color": "777777"}]},
+        {"index": 47, "text": "2. Paragraph B ii", "role": "question_or_option"},
+        {"index": 48, "text": "Paragraph B: 'methodology' — heading ii.", "role": "answer_key_entry", "runs": [{"text": "Paragraph B: 'methodology' — heading ii.", "bold": false, "italic": true, "color": "777777"}]},
+        {"index": 49, "text": "3. Paragraph C iii", "role": "question_or_option"},
+        {"index": 50, "text": "Paragraph C: 'limitations' — heading iii.", "role": "answer_key_entry", "runs": [{"text": "Paragraph C: 'limitations' — heading iii.", "bold": false, "italic": true, "color": "777777"}]},
+        {"index": 51, "text": "Distractors: iv, v", "role": "text"}
+      ],
+      "answer_key": [],
+      "heading_list": [["i", "The initial framework for observation"], ["ii", "How the study was conducted"], ["iii", "Weaknesses in the observational design"], ["iv", "An unrelated example for distractor"], ["v", "A summary of key recommendations"]],
+      "heading_answers": {"A": "i", "B": "ii", "C": "iii"},
+      "summary_answer_lines": []
+    }
+  ],
+  "extraction_warnings": []
+}

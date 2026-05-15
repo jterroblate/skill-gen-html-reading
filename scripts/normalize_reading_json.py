@@ -26,7 +26,7 @@ def load_generator():
     return mod
 
 
-LEAK_MARK_RE = re.compile(r"\s*(?:[✓✔√]|\[(?:correct|answer)\]|\((?:correct|answer)\)|\bCorrect(?:\s+answer)?\b|\bAnswer:\s*)\s*", re.I)
+LEAK_MARK_RE = re.compile(r"\s*(?:[✓✔√]|\[(?:correct|answer)\]|\((?:correct|answer)\))\s*", re.I)
 INTERNAL_FALLBACK_EN = "The teacher version marks this as the correct answer, but no detailed explanation was provided in the source document."
 
 
